@@ -3136,6 +3136,8 @@
             box-shadow: 0 -8px 32px rgba(0,0,0,0.12);
             padding: 16px;
             z-index: 260;
+            max-height: 320px;
+            overflow-y: auto;
             opacity: 0;
             transform: translateY(20px);
             pointer-events: none;
@@ -10177,7 +10179,6 @@
             closeChatPlusMenu();
             renderChatMessages();
             applyChatBackground();
-            document.getElementById('chatInput').focus();
             updateChatLocationShareBar();
         }
 
