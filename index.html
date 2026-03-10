@@ -3531,6 +3531,53 @@
         .chat-plus-item-icon .theme-custom-icon-img { width: 28px; height: 28px; object-fit: contain; }
         .relation-add-btn .theme-custom-icon-img { width: 18px; height: 18px; object-fit: contain; }
         #chatHeartBtn .theme-custom-icon-img { width: 24px; height: 24px; object-fit: contain; }
+        #chatHeartBtn.loading .theme-custom-icon-img { display: none !important; }
+        #chatHeartBtn {
+            position: relative;
+        }
+        #chatHeartBtn .chat-heart-icon-default {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+        #chatHeartBtn.loading .chat-heart-icon-default {
+            display: none;
+        }
+        #chatHeartBtn .chat-heart-loading,
+        #chatHeartBtn .chat-heart-loading-custom {
+            display: none;
+            align-items: center;
+            justify-content: center;
+        }
+        #chatHeartBtn.loading .chat-heart-loading {
+            display: inline-flex;
+        }
+        #chatHeartBtn.loading.has-custom-loading .chat-heart-loading {
+            display: none;
+        }
+        #chatHeartBtn.loading.has-custom-loading .chat-heart-loading-custom {
+            display: inline-flex;
+        }
+        #chatHeartBtn .chat-heart-loading-spinner {
+            width: 20px;
+            height: 20px;
+            border-radius: 999px;
+            border: 2px solid var(--accent-intel-alt);
+            border-top-color: transparent;
+            box-sizing: border-box;
+            animation: chat-heart-rotate 0.9s linear infinite;
+        }
+        #chatHeartBtn .chat-heart-loading-custom video,
+        #chatHeartBtn .chat-heart-loading-custom img {
+            width: 24px;
+            height: 24px;
+            border-radius: var(--radius-lg);
+            object-fit: cover;
+        }
+        @keyframes chat-heart-rotate {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
         #chatBack .theme-custom-icon-img { width: 20px; height: 20px; object-fit: contain; }
         #voiceCallHangupBtn .theme-custom-icon-img, #videoCallHangupBtn .theme-custom-icon-img { width: 28px; height: 28px; object-fit: contain; }
         #voiceCallDoodleBtn .theme-custom-icon-img { width: 24px; height: 24px; object-fit: contain; }
@@ -6239,9 +6286,15 @@
                 <div class="chat-send-wrap">
                     <button type="button" class="chat-send" id="chatSend">发送</button>
                     <button type="button" class="chat-send-icon" id="chatHeartBtn" aria-label="AI回复" title="让Ta根据设定与聊天记录回复">
-                        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                            <path d="M12 20.5c-.3 0-.6-.1-.8-.3C9.5 18.2 3 13 3 8c0-3.3 2.7-6 6-6 1.6 0 3.1.6 4.2 1.8L12 6.5l1.8-2.7C14.9 2.6 16.4 2 18 2c3.3 0 6 2.7 6 6 0 5-6.5 10.2-8.2 12.2-.2.2-.5.3-.8.3z" fill="none"/>
-                        </svg>
+                        <span class="chat-heart-icon-default">
+                            <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M12 20.5c-.3 0-.6-.1-.8-.3C9.5 18.2 3 13 3 8c0-3.3 2.7-6 6-6 1.6 0 3.1.6 4.2 1.8L12 6.5l1.8-2.7C14.9 2.6 16.4 2 18 2c3.3 0 6 2.7 6 6 0 5-6.5 10.2-8.2 12.2-.2.2-.5.3-.8.3z" fill="none"/>
+                            </svg>
+                        </span>
+                        <span class="chat-heart-loading" aria-hidden="true">
+                            <span class="chat-heart-loading-spinner"></span>
+                        </span>
+                        <span class="chat-heart-loading-custom" id="chatHeartLoadingCustom" aria-hidden="true"></span>
                     </button>
                 </div>
             </div>
@@ -6938,8 +6991,26 @@
                 <div class="theme-section-hint">为下方每项从本地相册选择图片替换默认 SVG 图标；留空则使用默认图标。点击「从相册选择」后选取图片即可。</div>
                 <div class="theme-icon-list" id="themeIconList"></div>
             </div>
+            <div class="theme-section">
+                <div class="card-title" style="margin-bottom:4px;">爱心加载动画</div>
+                <div class="theme-section-hint">为聊天界面的爱心点击后调用接口时设置一段专属加载动画。支持导入图片或短视频（静音循环播放）；留空则使用内置圆形加载动画。</div>
+                <div class="theme-icon-item">
+                    <div class="theme-icon-meta">
+                        <div class="theme-icon-name">聊天 · 爱心加载动画</div>
+                        <div class="theme-icon-desc">仅在点击聊天界面右下角小爱心并等待 AI 回复时显示，可用于展示角色专属动效。</div>
+                    </div>
+                    <div class="theme-icon-actions">
+                        <span style="display:inline-flex;align-items:center;min-width:36px;" id="heartLoadingPreview">
+                            <span style="font-size:12px;color:var(--text-muted);">默认</span>
+                        </span>
+                        <button type="button" class="theme-icon-pick-btn" id="heartLoadingPickBtn">从相册 / 视频选择</button>
+                        <button type="button" class="theme-icon-clear-btn" id="heartLoadingClearBtn">恢复默认</button>
+                    </div>
+                </div>
+            </div>
         </div>
         <input type="file" id="themeIconFileInput" accept="image/*" style="display:none;">
+        <input type="file" id="heartLoadingFileInput" accept="image/*,video/*" style="display:none;">
     </div>
 
     <!-- 自定义导入字体全屏页 -->
@@ -15358,7 +15429,38 @@
             const relationIdForReply = currentChatRelationId;
             const btn = document.getElementById('chatHeartBtn');
             heartRequestInFlight = true;
-            if (btn) btn.disabled = true;
+            if (btn) {
+                btn.disabled = true;
+                let hasCustom = false;
+                const loadingCustom = btn.querySelector('#chatHeartLoadingCustom');
+                if (loadingCustom) {
+                    loadingCustom.innerHTML = '';
+                    const media = userSettings.heartLoadingMedia;
+                    if (media && media.dataUrl) {
+                        hasCustom = true;
+                        if (media.isVideo) {
+                            const v = document.createElement('video');
+                            v.src = media.dataUrl;
+                            v.muted = true;
+                            v.loop = true;
+                            v.autoplay = true;
+                            v.playsInline = true;
+                            loadingCustom.appendChild(v);
+                        } else {
+                            const img = document.createElement('img');
+                            img.src = media.dataUrl;
+                            img.alt = '';
+                            loadingCustom.appendChild(img);
+                        }
+                    }
+                }
+                if (hasCustom) {
+                    btn.classList.add('has-custom-loading');
+                } else {
+                    btn.classList.remove('has-custom-loading');
+                }
+                btn.classList.add('loading');
+            }
             let endpoint = (userSettings.api.endpoint || '').trim();
             if (!endpoint.endsWith('/chat/completions')) endpoint = endpoint.replace(/\/$/, '') + '/chat/completions';
             var userMessageContent = userContent;
@@ -15634,7 +15736,13 @@
                 showTipModal('调用失败', e.message || String(e));
             } finally {
                 heartRequestInFlight = false;
-                if (btn) btn.disabled = false;
+                if (btn) {
+                    btn.disabled = false;
+                    btn.classList.remove('loading');
+                    btn.classList.remove('has-custom-loading');
+                    const loadingCustom = btn.querySelector('#chatHeartLoadingCustom');
+                    if (loadingCustom) loadingCustom.innerHTML = '';
+                }
             }
         }
 
@@ -15919,6 +16027,21 @@
                 });
             });
         }
+        function renderHeartLoadingPreview() {
+            const box = document.getElementById('heartLoadingPreview');
+            if (!box) return;
+            const media = userSettings.heartLoadingMedia;
+            if (!media || !media.dataUrl) {
+                box.innerHTML = '<span style="font-size:12px;color:var(--text-muted);">默认</span>';
+                return;
+            }
+            const dataUrl = media.dataUrl.replace(/"/g, '&quot;');
+            if (media.isVideo) {
+                box.innerHTML = '<video src="' + dataUrl + '" muted loop autoplay playsinline style="width:32px;height:32px;border-radius:6px;object-fit:cover;"></video>';
+            } else {
+                box.innerHTML = '<img src="' + dataUrl + '" class="theme-icon-img" style="width:32px;height:32px;object-fit:contain;border-radius:6px;">';
+            }
+        }
         function renderThemeIconList() {
             const list = document.getElementById('themeIconList');
             if (!list) return;
@@ -15975,6 +16098,7 @@
         function openThemeCustomizePanel() {
             renderThemeColorList();
             renderThemeIconList();
+            renderHeartLoadingPreview();
             document.getElementById('themeCustomizePanel').classList.add('show');
         }
         function closeThemeCustomizePanel() {
@@ -17870,6 +17994,38 @@ ${historyDesc}
                 };
                 reader.readAsDataURL(file);
             }
+        });
+        document.getElementById('heartLoadingPickBtn').addEventListener('click', function() {
+            var input = document.getElementById('heartLoadingFileInput');
+            if (input) {
+                input.value = '';
+                input.click();
+            }
+        });
+        document.getElementById('heartLoadingClearBtn').addEventListener('click', function() {
+            if (!userSettings.heartLoadingMedia) userSettings.heartLoadingMedia = null;
+            else userSettings.heartLoadingMedia = null;
+            saveGame();
+            renderHeartLoadingPreview();
+            if (typeof showTipModal === 'function') showTipModal('已恢复', '爱心加载动画已恢复为默认样式');
+        });
+        document.getElementById('heartLoadingFileInput').addEventListener('change', function(e) {
+            var file = e.target && e.target.files && e.target.files[0];
+            e.target.value = '';
+            if (!file) return;
+            var reader = new FileReader();
+            reader.onload = function() {
+                if (!userSettings.heartLoadingMedia || typeof userSettings.heartLoadingMedia !== 'object') {
+                    userSettings.heartLoadingMedia = {};
+                }
+                userSettings.heartLoadingMedia.dataUrl = reader.result;
+                userSettings.heartLoadingMedia.isVideo = /^video\//i.test(file.type || '');
+                userSettings.heartLoadingMedia.name = file.name || '';
+                saveGame();
+                renderHeartLoadingPreview();
+                if (typeof showTipModal === 'function') showTipModal('已设置', '爱心加载动画已更新');
+            };
+            reader.readAsDataURL(file);
         });
         document.getElementById('storageCleanConfirmBtn').addEventListener('click', applyStorageClean);
         var tutorialRow = document.getElementById('tutorialRow');
