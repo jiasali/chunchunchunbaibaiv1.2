@@ -2,7 +2,7 @@
   "name": "纯白人生",
   "short_name": "纯白人生",
   "description": "纯白人生 · Tabula Rasa 养成模拟器",
-  "start_url": "./纯白人生.html",
+  "start_url": "./index.html",
   "display": "standalone",
   "orientation": "portrait",
   "background_color": "#FFFFFF",
