@@ -3782,6 +3782,12 @@
         .api-field label { display: block; font-size: 13px; color: var(--text-muted); margin-bottom: 4px; }
         .api-key-wrap { position: relative; display: flex; align-items: center; margin-top: 8px; }
         .api-key-wrap .api-input { margin-top: 0; padding-right: 40px; }
+        /* 手机端 API Key 必须支持长按粘贴/复制 */
+        #apiKey, #pexelsKey, #momentsImageApiKey {
+            user-select: text;
+            -webkit-user-select: text;
+            -webkit-user-callout: default;
+        }
         .api-key-eye-btn { position: absolute; right: 8px; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; background: none; border: none; border-radius: var(--radius); cursor: pointer; color: var(--text-muted); transition: color 0.2s, background 0.2s; }
         .api-key-eye-btn:hover { color: var(--text-body); background: rgba(0,0,0,0.05); }
         .api-key-eye-btn svg { flex-shrink: 0; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
@@ -6890,7 +6896,7 @@
                     <div class="api-field">
                         <label>API Key</label>
                         <div class="api-key-wrap">
-                            <input type="password" class="api-input" id="apiKey" placeholder="sk-...">
+                            <input type="password" class="api-input" id="apiKey" placeholder="sk-..." autocomplete="off" autocorrect="off" autocapitalize="off" inputmode="text">
                             <button type="button" class="api-key-eye-btn" id="apiKeyEyeBtn" aria-label="显示/隐藏 Key" title="点击显示完整 Key">
                                 <svg class="api-key-eye-icon api-key-eye-on" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" width="18" height="18"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><circle cx="12" cy="12" r="3" fill="none" stroke="currentColor" stroke-width="2"/></svg>
                                 <svg class="api-key-eye-icon api-key-eye-off" style="display:none" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" width="18" height="18"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><line x1="1" y1="1" x2="23" y2="23" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
@@ -6932,7 +6938,7 @@
                     </div>
                     <div class="api-field">
                         <label>Pexels API Key（选填，用于礼物图片）</label>
-                        <input type="password" class="api-input" id="pexelsKey" placeholder="在 pexels.com/api 免费获取">
+                        <input type="password" class="api-input" id="pexelsKey" placeholder="在 pexels.com/api 免费获取" autocomplete="off" autocorrect="off" autocapitalize="off" inputmode="text">
                     </div>
                 </div>
             </div>
@@ -7461,7 +7467,7 @@
                     </div>
                     <div class="api-field">
                         <label>文生图 Key</label>
-                        <input type="password" class="api-input" id="momentsImageApiKey" placeholder="sk-...">
+                        <input type="password" class="api-input" id="momentsImageApiKey" placeholder="sk-..." autocomplete="off" autocorrect="off" autocapitalize="off" inputmode="text">
                     </div>
                     <div class="api-field">
                         <label>模型</label>
@@ -17754,8 +17760,20 @@ ${historyDesc}
             listEl.innerHTML = '<div style="padding:12px;color:var(--text-muted)">加载中...</div>';
             listEl.classList.add('show');
             try {
-                const res = await fetch(modelsUrl, { headers: { 'Authorization': 'Bearer ' + key } });
-                const data = await res.json();
+                let data;
+                try {
+                    const res = await fetch(modelsUrl, { mode: 'cors', credentials: 'omit', headers: { 'Authorization': 'Bearer ' + key } });
+                    data = await res.json();
+                } catch (fetchErr) {
+                    data = await new Promise(function(resolve, reject) {
+                        var xhr = new XMLHttpRequest();
+                        xhr.open('GET', modelsUrl);
+                        xhr.setRequestHeader('Authorization', 'Bearer ' + key);
+                        xhr.onload = function() { try { resolve(JSON.parse(xhr.responseText)); } catch(e) { reject(e); } };
+                        xhr.onerror = function() { reject(new Error('网络错误')); };
+                        xhr.send();
+                    });
+                }
                 const raw = data.data ? data.data.map(function(x) { return x.id; }) : [];
                 const models = raw.length ? raw : (data.models ? data.models.map(function(x) { return x.id || x; }) : []);
                 if (!models.length) { listEl.innerHTML = '<div style="padding:12px;color:var(--text-muted)">未获取到模型</div>'; return; }
@@ -20007,8 +20025,20 @@ ${historyDesc}
             listEl.innerHTML = '<div style="padding:12px;color:var(--text-muted)">加载中...</div>';
             listEl.classList.add('show');
             try {
-                const res = await fetch(modelsUrl, { headers: { 'Authorization': 'Bearer ' + key } });
-                const data = await res.json();
+                let data;
+                try {
+                    const res = await fetch(modelsUrl, { mode: 'cors', credentials: 'omit', headers: { 'Authorization': 'Bearer ' + key } });
+                    data = await res.json();
+                } catch (fetchErr) {
+                    data = await new Promise((resolve, reject) => {
+                        const xhr = new XMLHttpRequest();
+                        xhr.open('GET', modelsUrl);
+                        xhr.setRequestHeader('Authorization', 'Bearer ' + key);
+                        xhr.onload = function() { try { resolve(JSON.parse(xhr.responseText)); } catch(e) { reject(e); } };
+                        xhr.onerror = function() { reject(new Error('网络错误')); };
+                        xhr.send();
+                    });
+                }
                 const models = data.data ? data.data.map(x => x.id) : [];
                 if (models.length === 0) { listEl.innerHTML = '<div style="padding:12px;color:var(--text-muted)">未获取到模型</div>'; return; }
                 listEl.innerHTML = models.map(id => `<div class="model-item" data-model="${id}">${id}</div>`).join('');
