@@ -3136,6 +3136,8 @@
             box-shadow: 0 -8px 32px rgba(0,0,0,0.12);
             padding: 16px;
             z-index: 260;
+            max-height: 320px;
+            overflow-y: auto;
             opacity: 0;
             transform: translateY(20px);
             pointer-events: none;
@@ -3531,6 +3533,53 @@
         .chat-plus-item-icon .theme-custom-icon-img { width: 28px; height: 28px; object-fit: contain; }
         .relation-add-btn .theme-custom-icon-img { width: 18px; height: 18px; object-fit: contain; }
         #chatHeartBtn .theme-custom-icon-img { width: 24px; height: 24px; object-fit: contain; }
+        #chatHeartBtn.loading .theme-custom-icon-img { display: none !important; }
+        #chatHeartBtn {
+            position: relative;
+        }
+        #chatHeartBtn .chat-heart-icon-default {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+        #chatHeartBtn.loading .chat-heart-icon-default {
+            display: none;
+        }
+        #chatHeartBtn .chat-heart-loading,
+        #chatHeartBtn .chat-heart-loading-custom {
+            display: none;
+            align-items: center;
+            justify-content: center;
+        }
+        #chatHeartBtn.loading .chat-heart-loading {
+            display: inline-flex;
+        }
+        #chatHeartBtn.loading.has-custom-loading .chat-heart-loading {
+            display: none;
+        }
+        #chatHeartBtn.loading.has-custom-loading .chat-heart-loading-custom {
+            display: inline-flex;
+        }
+        #chatHeartBtn .chat-heart-loading-spinner {
+            width: 20px;
+            height: 20px;
+            border-radius: 999px;
+            border: 2px solid var(--accent-intel-alt);
+            border-top-color: transparent;
+            box-sizing: border-box;
+            animation: chat-heart-rotate 0.9s linear infinite;
+        }
+        #chatHeartBtn .chat-heart-loading-custom video,
+        #chatHeartBtn .chat-heart-loading-custom img {
+            width: 24px;
+            height: 24px;
+            border-radius: var(--radius-lg);
+            object-fit: cover;
+        }
+        @keyframes chat-heart-rotate {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
         #chatBack .theme-custom-icon-img { width: 20px; height: 20px; object-fit: contain; }
         #voiceCallHangupBtn .theme-custom-icon-img, #videoCallHangupBtn .theme-custom-icon-img { width: 28px; height: 28px; object-fit: contain; }
         #voiceCallDoodleBtn .theme-custom-icon-img { width: 24px; height: 24px; object-fit: contain; }
@@ -3733,6 +3782,12 @@
         .api-field label { display: block; font-size: 13px; color: var(--text-muted); margin-bottom: 4px; }
         .api-key-wrap { position: relative; display: flex; align-items: center; margin-top: 8px; }
         .api-key-wrap .api-input { margin-top: 0; padding-right: 40px; }
+        /* 手机端 API Key 必须支持长按粘贴/复制 */
+        #apiKey, #pexelsKey, #momentsImageApiKey {
+            user-select: text;
+            -webkit-user-select: text;
+            -webkit-user-callout: default;
+        }
         .api-key-eye-btn { position: absolute; right: 8px; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; background: none; border: none; border-radius: var(--radius); cursor: pointer; color: var(--text-muted); transition: color 0.2s, background 0.2s; }
         .api-key-eye-btn:hover { color: var(--text-body); background: rgba(0,0,0,0.05); }
         .api-key-eye-btn svg { flex-shrink: 0; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
@@ -6239,9 +6294,15 @@
                 <div class="chat-send-wrap">
                     <button type="button" class="chat-send" id="chatSend">发送</button>
                     <button type="button" class="chat-send-icon" id="chatHeartBtn" aria-label="AI回复" title="让Ta根据设定与聊天记录回复">
-                        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                            <path d="M12 20.5c-.3 0-.6-.1-.8-.3C9.5 18.2 3 13 3 8c0-3.3 2.7-6 6-6 1.6 0 3.1.6 4.2 1.8L12 6.5l1.8-2.7C14.9 2.6 16.4 2 18 2c3.3 0 6 2.7 6 6 0 5-6.5 10.2-8.2 12.2-.2.2-.5.3-.8.3z" fill="none"/>
-                        </svg>
+                        <span class="chat-heart-icon-default">
+                            <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M12 20.5c-.3 0-.6-.1-.8-.3C9.5 18.2 3 13 3 8c0-3.3 2.7-6 6-6 1.6 0 3.1.6 4.2 1.8L12 6.5l1.8-2.7C14.9 2.6 16.4 2 18 2c3.3 0 6 2.7 6 6 0 5-6.5 10.2-8.2 12.2-.2.2-.5.3-.8.3z" fill="none"/>
+                            </svg>
+                        </span>
+                        <span class="chat-heart-loading" aria-hidden="true">
+                            <span class="chat-heart-loading-spinner"></span>
+                        </span>
+                        <span class="chat-heart-loading-custom" id="chatHeartLoadingCustom" aria-hidden="true"></span>
                     </button>
                 </div>
             </div>
@@ -6835,7 +6896,7 @@
                     <div class="api-field">
                         <label>API Key</label>
                         <div class="api-key-wrap">
-                            <input type="password" class="api-input" id="apiKey" placeholder="sk-...">
+                            <input type="password" class="api-input" id="apiKey" placeholder="sk-..." autocomplete="off" autocorrect="off" autocapitalize="off" inputmode="text">
                             <button type="button" class="api-key-eye-btn" id="apiKeyEyeBtn" aria-label="显示/隐藏 Key" title="点击显示完整 Key">
                                 <svg class="api-key-eye-icon api-key-eye-on" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" width="18" height="18"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><circle cx="12" cy="12" r="3" fill="none" stroke="currentColor" stroke-width="2"/></svg>
                                 <svg class="api-key-eye-icon api-key-eye-off" style="display:none" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" width="18" height="18"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><line x1="1" y1="1" x2="23" y2="23" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
@@ -6877,7 +6938,7 @@
                     </div>
                     <div class="api-field">
                         <label>Pexels API Key（选填，用于礼物图片）</label>
-                        <input type="password" class="api-input" id="pexelsKey" placeholder="在 pexels.com/api 免费获取">
+                        <input type="password" class="api-input" id="pexelsKey" placeholder="在 pexels.com/api 免费获取" autocomplete="off" autocorrect="off" autocapitalize="off" inputmode="text">
                     </div>
                 </div>
             </div>
@@ -6938,8 +6999,26 @@
                 <div class="theme-section-hint">为下方每项从本地相册选择图片替换默认 SVG 图标；留空则使用默认图标。点击「从相册选择」后选取图片即可。</div>
                 <div class="theme-icon-list" id="themeIconList"></div>
             </div>
+            <div class="theme-section">
+                <div class="card-title" style="margin-bottom:4px;">爱心加载动画</div>
+                <div class="theme-section-hint">为聊天界面的爱心点击后调用接口时设置一段专属加载动画。支持导入图片或短视频（静音循环播放）；留空则使用内置圆形加载动画。</div>
+                <div class="theme-icon-item">
+                    <div class="theme-icon-meta">
+                        <div class="theme-icon-name">聊天 · 爱心加载动画</div>
+                        <div class="theme-icon-desc">仅在点击聊天界面右下角小爱心并等待 AI 回复时显示，可用于展示角色专属动效。</div>
+                    </div>
+                    <div class="theme-icon-actions">
+                        <span style="display:inline-flex;align-items:center;min-width:36px;" id="heartLoadingPreview">
+                            <span style="font-size:12px;color:var(--text-muted);">默认</span>
+                        </span>
+                        <button type="button" class="theme-icon-pick-btn" id="heartLoadingPickBtn">从相册 / 视频选择</button>
+                        <button type="button" class="theme-icon-clear-btn" id="heartLoadingClearBtn">恢复默认</button>
+                    </div>
+                </div>
+            </div>
         </div>
         <input type="file" id="themeIconFileInput" accept="image/*" style="display:none;">
+        <input type="file" id="heartLoadingFileInput" accept="image/*,video/*" style="display:none;">
     </div>
 
     <!-- 自定义导入字体全屏页 -->
@@ -7388,7 +7467,7 @@
                     </div>
                     <div class="api-field">
                         <label>文生图 Key</label>
-                        <input type="password" class="api-input" id="momentsImageApiKey" placeholder="sk-...">
+                        <input type="password" class="api-input" id="momentsImageApiKey" placeholder="sk-..." autocomplete="off" autocorrect="off" autocapitalize="off" inputmode="text">
                     </div>
                     <div class="api-field">
                         <label>模型</label>
@@ -10106,7 +10185,6 @@
             closeChatPlusMenu();
             renderChatMessages();
             applyChatBackground();
-            document.getElementById('chatInput').focus();
             updateChatLocationShareBar();
         }
 
@@ -15358,7 +15436,38 @@
             const relationIdForReply = currentChatRelationId;
             const btn = document.getElementById('chatHeartBtn');
             heartRequestInFlight = true;
-            if (btn) btn.disabled = true;
+            if (btn) {
+                btn.disabled = true;
+                let hasCustom = false;
+                const loadingCustom = btn.querySelector('#chatHeartLoadingCustom');
+                if (loadingCustom) {
+                    loadingCustom.innerHTML = '';
+                    const media = userSettings.heartLoadingMedia;
+                    if (media && media.dataUrl) {
+                        hasCustom = true;
+                        if (media.isVideo) {
+                            const v = document.createElement('video');
+                            v.src = media.dataUrl;
+                            v.muted = true;
+                            v.loop = true;
+                            v.autoplay = true;
+                            v.playsInline = true;
+                            loadingCustom.appendChild(v);
+                        } else {
+                            const img = document.createElement('img');
+                            img.src = media.dataUrl;
+                            img.alt = '';
+                            loadingCustom.appendChild(img);
+                        }
+                    }
+                }
+                if (hasCustom) {
+                    btn.classList.add('has-custom-loading');
+                } else {
+                    btn.classList.remove('has-custom-loading');
+                }
+                btn.classList.add('loading');
+            }
             let endpoint = (userSettings.api.endpoint || '').trim();
             if (!endpoint.endsWith('/chat/completions')) endpoint = endpoint.replace(/\/$/, '') + '/chat/completions';
             var userMessageContent = userContent;
@@ -15634,7 +15743,13 @@
                 showTipModal('调用失败', e.message || String(e));
             } finally {
                 heartRequestInFlight = false;
-                if (btn) btn.disabled = false;
+                if (btn) {
+                    btn.disabled = false;
+                    btn.classList.remove('loading');
+                    btn.classList.remove('has-custom-loading');
+                    const loadingCustom = btn.querySelector('#chatHeartLoadingCustom');
+                    if (loadingCustom) loadingCustom.innerHTML = '';
+                }
             }
         }
 
@@ -15919,6 +16034,21 @@
                 });
             });
         }
+        function renderHeartLoadingPreview() {
+            const box = document.getElementById('heartLoadingPreview');
+            if (!box) return;
+            const media = userSettings.heartLoadingMedia;
+            if (!media || !media.dataUrl) {
+                box.innerHTML = '<span style="font-size:12px;color:var(--text-muted);">默认</span>';
+                return;
+            }
+            const dataUrl = media.dataUrl.replace(/"/g, '&quot;');
+            if (media.isVideo) {
+                box.innerHTML = '<video src="' + dataUrl + '" muted loop autoplay playsinline style="width:32px;height:32px;border-radius:6px;object-fit:cover;"></video>';
+            } else {
+                box.innerHTML = '<img src="' + dataUrl + '" class="theme-icon-img" style="width:32px;height:32px;object-fit:contain;border-radius:6px;">';
+            }
+        }
         function renderThemeIconList() {
             const list = document.getElementById('themeIconList');
             if (!list) return;
@@ -15975,6 +16105,7 @@
         function openThemeCustomizePanel() {
             renderThemeColorList();
             renderThemeIconList();
+            renderHeartLoadingPreview();
             document.getElementById('themeCustomizePanel').classList.add('show');
         }
         function closeThemeCustomizePanel() {
@@ -17629,8 +17760,20 @@ ${historyDesc}
             listEl.innerHTML = '<div style="padding:12px;color:var(--text-muted)">加载中...</div>';
             listEl.classList.add('show');
             try {
-                const res = await fetch(modelsUrl, { headers: { 'Authorization': 'Bearer ' + key } });
-                const data = await res.json();
+                let data;
+                try {
+                    const res = await fetch(modelsUrl, { mode: 'cors', credentials: 'omit', headers: { 'Authorization': 'Bearer ' + key } });
+                    data = await res.json();
+                } catch (fetchErr) {
+                    data = await new Promise(function(resolve, reject) {
+                        var xhr = new XMLHttpRequest();
+                        xhr.open('GET', modelsUrl);
+                        xhr.setRequestHeader('Authorization', 'Bearer ' + key);
+                        xhr.onload = function() { try { resolve(JSON.parse(xhr.responseText)); } catch(e) { reject(e); } };
+                        xhr.onerror = function() { reject(new Error('网络错误')); };
+                        xhr.send();
+                    });
+                }
                 const raw = data.data ? data.data.map(function(x) { return x.id; }) : [];
                 const models = raw.length ? raw : (data.models ? data.models.map(function(x) { return x.id || x; }) : []);
                 if (!models.length) { listEl.innerHTML = '<div style="padding:12px;color:var(--text-muted)">未获取到模型</div>'; return; }
@@ -17870,6 +18013,38 @@ ${historyDesc}
                 };
                 reader.readAsDataURL(file);
             }
+        });
+        document.getElementById('heartLoadingPickBtn').addEventListener('click', function() {
+            var input = document.getElementById('heartLoadingFileInput');
+            if (input) {
+                input.value = '';
+                input.click();
+            }
+        });
+        document.getElementById('heartLoadingClearBtn').addEventListener('click', function() {
+            if (!userSettings.heartLoadingMedia) userSettings.heartLoadingMedia = null;
+            else userSettings.heartLoadingMedia = null;
+            saveGame();
+            renderHeartLoadingPreview();
+            if (typeof showTipModal === 'function') showTipModal('已恢复', '爱心加载动画已恢复为默认样式');
+        });
+        document.getElementById('heartLoadingFileInput').addEventListener('change', function(e) {
+            var file = e.target && e.target.files && e.target.files[0];
+            e.target.value = '';
+            if (!file) return;
+            var reader = new FileReader();
+            reader.onload = function() {
+                if (!userSettings.heartLoadingMedia || typeof userSettings.heartLoadingMedia !== 'object') {
+                    userSettings.heartLoadingMedia = {};
+                }
+                userSettings.heartLoadingMedia.dataUrl = reader.result;
+                userSettings.heartLoadingMedia.isVideo = /^video\//i.test(file.type || '');
+                userSettings.heartLoadingMedia.name = file.name || '';
+                saveGame();
+                renderHeartLoadingPreview();
+                if (typeof showTipModal === 'function') showTipModal('已设置', '爱心加载动画已更新');
+            };
+            reader.readAsDataURL(file);
         });
         document.getElementById('storageCleanConfirmBtn').addEventListener('click', applyStorageClean);
         var tutorialRow = document.getElementById('tutorialRow');
@@ -19887,8 +20062,20 @@ ${historyDesc}
             listEl.innerHTML = '<div style="padding:12px;color:var(--text-muted)">加载中...</div>';
             listEl.classList.add('show');
             try {
-                const res = await fetch(modelsUrl, { headers: { 'Authorization': 'Bearer ' + key } });
-                const data = await res.json();
+                let data;
+                try {
+                    const res = await fetch(modelsUrl, { mode: 'cors', credentials: 'omit', headers: { 'Authorization': 'Bearer ' + key } });
+                    data = await res.json();
+                } catch (fetchErr) {
+                    data = await new Promise((resolve, reject) => {
+                        const xhr = new XMLHttpRequest();
+                        xhr.open('GET', modelsUrl);
+                        xhr.setRequestHeader('Authorization', 'Bearer ' + key);
+                        xhr.onload = function() { try { resolve(JSON.parse(xhr.responseText)); } catch(e) { reject(e); } };
+                        xhr.onerror = function() { reject(new Error('网络错误')); };
+                        xhr.send();
+                    });
+                }
                 const models = data.data ? data.data.map(x => x.id) : [];
                 if (models.length === 0) { listEl.innerHTML = '<div style="padding:12px;color:var(--text-muted)">未获取到模型</div>'; return; }
                 listEl.innerHTML = models.map(id => `<div class="model-item" data-model="${id}">${id}</div>`).join('');
