@@ -19273,6 +19273,8 @@ ${historyDesc}
         }
         /* 推送服务器 URL：游戏作者部署 Cloudflare Worker 后填入，用于 iOS 后台推送。留空则仅安卓 periodicSync 生效 */
         var PUSH_SERVER_URL = 'https://tabula-proactive-push.819914401.workers.dev';
+        /* 国内备用地址：workers.dev 在国内可能打不开，可绑定自定义域名后填入，如 'https://push.你的域名.com'。留空则只用上面的地址 */
+        var PUSH_SERVER_URL_CN = 'https://push.xiaoyuncloud.cn';
         const PROACTIVE_DB = 'tabula_proactive_db';
         const PROACTIVE_STORE = 'proactive';
         function openProactiveDB() {
@@ -19372,20 +19374,44 @@ ${historyDesc}
                 }
             }).catch(() => {});
         }
+        function getPushServerBase() {
+            var list = [];
+            var u1 = (typeof PUSH_SERVER_URL === 'string' && PUSH_SERVER_URL.trim()) ? PUSH_SERVER_URL.trim().replace(/\/$/, '') : '';
+            var u2 = (typeof PUSH_SERVER_URL_CN === 'string' && PUSH_SERVER_URL_CN.trim()) ? PUSH_SERVER_URL_CN.trim().replace(/\/$/, '') : '';
+            if (u1) list.push(u1);
+            if (u2 && u2 !== u1) list.push(u2);
+            return list;
+        }
+        function tryFetchFromBases(bases, path, opts) {
+            if (!bases.length) return Promise.reject(new Error('无可用推送服务器'));
+            var i = 0;
+            function attempt() {
+                var base = bases[i];
+                var url = base + path;
+                var reqOpts = opts || {};
+                return fetch(url, reqOpts).then(function(r) { return { ok: r.ok, base: base, res: r }; }).catch(function(e) {
+                    i++;
+                    if (i < bases.length) return attempt();
+                    throw e;
+                });
+            }
+            return attempt();
+        }
         function registerWithPushServer() {
-            var base = (typeof PUSH_SERVER_URL === 'string' && PUSH_SERVER_URL.trim()) ? PUSH_SERVER_URL.trim().replace(/\/$/, '') : '';
-            if (!base) return Promise.resolve();
+            var bases = getPushServerBase();
+            if (!bases.length) return Promise.resolve();
             if (!('serviceWorker' in navigator) || !('PushManager' in window)) return Promise.resolve();
+            var base = bases[0];
             return navigator.serviceWorker.ready.then(function(reg) {
                 return reg.pushManager.getSubscription().then(function(sub) {
                     var needSubscribe = !sub;
                     if (sub) needSubscribe = false;
                     if (needSubscribe) {
-                        return fetch(base + '/vapid-public').then(function(r) {
+                        return tryFetchFromBases(bases, '/vapid-public').then(function(o) {
+                            var r = o.res;
+                            base = o.base;
                             if (!r.ok) return r.json().catch(function() { return {}; }).then(function(json) {
-                                if (r.status === 500 && json && (json.error || '').indexOf('VAPID') >= 0) {
-                                    throw new Error('VAPID_NOT_CONFIGURED');
-                                }
+                                if (r.status === 500 && json && (json.error || '').indexOf('VAPID') >= 0) throw new Error('VAPID_NOT_CONFIGURED');
                                 throw new Error('VAPID 获取失败: ' + r.status);
                             });
                             return r.json();
@@ -19453,11 +19479,12 @@ ${historyDesc}
                         };
                     })
                 };
-                return fetch(base + '/register', {
+                return tryFetchFromBases(bases, '/register', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(payload)
-                }).then(function(res) {
+                }).then(function(o) {
+                    var res = o.res;
                     if (!res.ok) return res.text().then(function(t) { throw new Error(res.status + ': ' + (t || res.statusText)); });
                     return res.json();
                 }).then(function() {
