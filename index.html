@@ -19206,13 +19206,29 @@ ${historyDesc}
                     var needSubscribe = !sub;
                     if (sub) needSubscribe = false;
                     if (needSubscribe) {
-                        return fetch(base + '/vapid-public').then(function(r) { return r.json(); }).then(function(json) {
+                        return fetch(base + '/vapid-public').then(function(r) {
+                            if (!r.ok) return r.json().catch(function() { return {}; }).then(function(json) {
+                                if (r.status === 500 && json && (json.error || '').indexOf('VAPID') >= 0) {
+                                    throw new Error('VAPID_NOT_CONFIGURED');
+                                }
+                                throw new Error('VAPID 获取失败: ' + r.status);
+                            });
+                            return r.json();
+                        }).then(function(json) {
                             var key = json && json.publicKey ? json.publicKey : null;
-                            if (!key) return;
+                            if (!key) {
+                                if (typeof showTipModal === 'function') showTipModal('推送配置异常', '推送服务器未正确配置 VAPID 公钥，请联系游戏作者。');
+                                return null;
+                            }
                             return reg.pushManager.subscribe({
                                 userVisibleOnly: true,
                                 applicationServerKey: urlBase64ToUint8Array(key)
                             });
+                        }).catch(function(e) {
+                            var msg = (e && e.message) ? e.message : '请检查网络或稍后重试';
+                            if (msg === 'VAPID_NOT_CONFIGURED') msg = '推送服务器未配置 VAPID 密钥，请联系游戏作者部署 push-backend 并设置 VAPID_PUBLIC_KEY 和 VAPID_PRIVATE_KEY';
+                            if (typeof showTipModal === 'function') showTipModal('推送订阅失败', msg);
+                            return null;
                         });
                     }
                     return sub;
@@ -19220,12 +19236,16 @@ ${historyDesc}
                     if (!sub) return null;
                     var keys = {};
                     if (sub.getKey) {
-                        try { keys.p256dh = arrayBufferToBase64(sub.getKey('p256dh')); } catch (e) {}
-                        try { keys.auth = arrayBufferToBase64(sub.getKey('auth')); } catch (e) {}
+                        try { keys.p256dh = base64ToBase64Url(arrayBufferToBase64(sub.getKey('p256dh'))); } catch (e) {}
+                        try { keys.auth = base64ToBase64Url(arrayBufferToBase64(sub.getKey('auth'))); } catch (e) {}
                     }
                     if ((!keys.p256dh || !keys.auth) && sub.keys) {
-                        keys.p256dh = keys.p256dh || (sub.keys.p256dh && (typeof sub.keys.p256dh === 'string' ? sub.keys.p256dh : arrayBufferToBase64(sub.keys.p256dh)));
-                        keys.auth = keys.auth || (sub.keys.auth && (typeof sub.keys.auth === 'string' ? sub.keys.auth : arrayBufferToBase64(sub.keys.auth)));
+                        keys.p256dh = keys.p256dh || (sub.keys.p256dh && (typeof sub.keys.p256dh === 'string' ? sub.keys.p256dh : base64ToBase64Url(arrayBufferToBase64(sub.keys.p256dh))));
+                        keys.auth = keys.auth || (sub.keys.auth && (typeof sub.keys.auth === 'string' ? sub.keys.auth : base64ToBase64Url(arrayBufferToBase64(sub.keys.auth))));
+                    }
+                    if (!keys.p256dh || !keys.auth) {
+                        if (typeof showTipModal === 'function') showTipModal('推送密钥异常', '无法获取推送订阅密钥，请关闭后重新开启后台主动回复');
+                        return null;
                     }
                     return { endpoint: sub.endpoint, expirationTime: sub.expirationTime, keys: keys };
                 });
@@ -19233,12 +19253,16 @@ ${historyDesc}
                 if (!sub) return;
                 var list = (gameState.relations || []).filter(function(r) { return r.proactiveReply; });
                 if (!list.length) return;
+                if (!userSettings.api || !userSettings.api.endpoint || !userSettings.api.key) {
+                    if (typeof showTipModal === 'function') showTipModal('请先配置 API', '后台主动回复需要先设置 API 密钥');
+                    return;
+                }
                 var worldPresetText = (typeof getCheckedWorldPresetContents === 'function') ? getCheckedWorldPresetContents() : '';
                 var worldPresetBlock = worldPresetText && String(worldPresetText).trim() ? '\n\n【当前勾选的预设世界观】\n' + String(worldPresetText).trim() : '';
                 var playerProfileBlock = (typeof getPlayerProfileBlock === 'function') ? getPlayerProfileBlock() : '';
                 var payload = {
                     origin: location.origin,
-                    subscription: { endpoint: sub.endpoint, expirationTime: sub.expirationTime, keys: sub.keys || {} },
+                    subscription: { endpoint: sub.endpoint, expirationTime: sub.expirationTime, keys: sub.keys },
                     relations: list.map(function(r) {
                         return {
                             relationId: r.id,
@@ -19258,8 +19282,17 @@ ${historyDesc}
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(payload)
-                }).catch(function() {});
-            }).catch(function() {});
+                }).then(function(res) {
+                    if (!res.ok) return res.text().then(function(t) { throw new Error(res.status + ': ' + (t || res.statusText)); });
+                    return res.json();
+                }).then(function() {
+                    if (typeof showTipModal === 'function') showTipModal('推送已注册', '后台主动回复已开启，到时间后会在通知栏收到角色消息');
+                }).catch(function(e) {
+                    if (typeof showTipModal === 'function') showTipModal('推送注册失败', (e && e.message) ? e.message : '请检查网络或推送服务器是否正常');
+                });
+            }).catch(function(e) {
+                if (typeof showTipModal === 'function') showTipModal('推送设置失败', (e && e.message) ? e.message : '请稍后重试');
+            });
         }
         function urlBase64ToUint8Array(base64String) {
             var padding = '='.repeat((4 - base64String.length % 4) % 4);
@@ -19275,6 +19308,10 @@ ${historyDesc}
             var binary = '';
             for (var i = 0; i < bytes.byteLength; i++) binary += String.fromCharCode(bytes[i]);
             return btoa(binary);
+        }
+        function base64ToBase64Url(b64) {
+            if (!b64) return '';
+            return b64.replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
         }
         function runProactiveCatchUpOnLoad() {
             openProactiveDB().then(db => {

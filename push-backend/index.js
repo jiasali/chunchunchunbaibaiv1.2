@@ -46,6 +46,16 @@ export default {
       return jsonResp({ publicKey: pub });
     }
 
+    if (path === '/api/status' && request.method === 'GET') {
+      const vapidOk = !!(env.VAPID_PUBLIC_KEY && env.VAPID_PRIVATE_KEY);
+      let relationCount = 0;
+      try {
+        const list = await env.PROACTIVE_KV.list({ prefix: 'rel:' });
+        relationCount = (list.keys || []).length;
+      } catch (_) {}
+      return jsonResp({ ok: true, vapidConfigured: vapidOk, relationCount });
+    }
+
     if (path.startsWith('/icon/')) {
       let id = '';
       try { id = decodeURIComponent(path.slice(6)); } catch (_) { id = path.slice(6); }

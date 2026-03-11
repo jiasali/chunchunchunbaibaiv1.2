@@ -1,6 +1,7 @@
 name = "tabula-proactive-push"
 main = "index.js"
 compatibility_date = "2024-01-01"
+compatibility_flags = ["nodejs_compat"]
 
 [vars]
 # 游戏页面来源，用于 CORS，例如 https://xxx.github.io
