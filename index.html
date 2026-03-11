@@ -7272,7 +7272,7 @@
             <ul>
                 <li><strong>在哪开</strong>：进某个角色的聊天 → 点右上角「···」→ 选「消息通知设置」→ 打开「后台主动回复」。</li>
                 <li><strong>什么意思</strong>：角色会在你不打开游戏的时候，按你设定的间隔，主动给你发一条消息，并推送到你的通知栏。就像 Ta 真的在找你聊天一样。</li>
-                <li><strong>间隔</strong>：「每隔多少小时回复一次」可以填 1～24，比如填 3 就是大约每 3 小时发一条。</li>
+                <li><strong>间隔</strong>：「每隔多少小时回复一次」可填 0.01～168。如 0.1=6分钟、0.5=30分钟、1=1小时、3=3小时。你设多少，通知就按该间隔推送（Web Push / 打开游戏时补拉均遵循；安卓 periodicSync 受浏览器限制约 12 小时，无法缩短）。</li>
             </ul>
             <p><strong>8.1 电脑、安卓、iOS 分别怎么用</strong></p>
             <ul>
@@ -7284,6 +7284,7 @@
             <ul>
                 <li><strong>收不到通知</strong>：检查浏览器或系统设置里，有没有把这个网站的通知关掉。可以关掉再重新打开「后台主动回复」，按提示重新授权。</li>
                 <li><strong>只有打开游戏才有，关掉就没有</strong>：可能是设备或浏览器不支持后台推送，或省电模式限制了。可以试试把浏览器加入白名单，或坚持用主屏幕图标方式打开（iOS）。</li>
+                <li><strong>安卓用 Edge 添加主屏幕，通知栏不显示</strong>：Edge 安卓对 Web Push 支持不完善，应用关闭时可能收不到通知；打开应用时会弹窗提示新消息。建议改用 Chrome 添加主屏幕，通知更稳定。</li>
                 <li><strong>安卓有头像，iOS 没有</strong>：系统规则不同，不是 bug。我们尽量在标题和正文里写清楚是谁、说了什么。</li>
                 <li><strong>不想被打扰</strong>：随时在聊天设置里关掉「后台主动回复」，或在系统里关掉这个网站的通知。</li>
             </ul>
@@ -8323,7 +8324,7 @@
             <div class="profile-field">
                 <div class="proactive-interval-row">
                     <span class="proactive-interval-label">每隔多少小时回复一次</span>
-                    <input type="number" class="proactive-interval-input" id="proactiveIntervalHours" min="1" max="24" value="1" step="1" title="1～24 小时">
+                    <input type="number" class="proactive-interval-input" id="proactiveIntervalHours" min="0.01" max="168" value="1" step="0.01" title="0.01～168 小时，如 0.1=6分钟、0.5=30分钟">
                 </div>
                 <div class="proactive-enable-row">
                     <span class="proactive-enable-label">开启后台主动回复</span>
@@ -8332,7 +8333,7 @@
                         <span class="chat-switch-thumb" id="proactiveEnableThumb"></span>
                     </label>
                 </div>
-                <div class="proactive-hint">开启后，退出游戏后角色会按间隔主动发消息，并推送系统通知（头像、名字、消息内容）。玩家只需授权通知权限即可，无需注册。安卓直接生效；iOS 需将本页「添加到主屏幕」后，由游戏作者配置推送服务器（见 push-backend 目录）方可实现后台推送。</div>
+                <div class="proactive-hint">开启后，退出游戏后角色会按间隔主动发消息，并推送系统通知（头像、名字、消息内容）。间隔可填 0.01～168 小时（如 0.1=6分钟）。玩家只需授权通知权限即可，无需注册。安卓直接生效；iOS 需将本页「添加到主屏幕」后，由游戏作者配置推送服务器（见 push-backend 目录）方可实现后台推送。</div>
             </div>
         </div>
     </div>
@@ -19258,7 +19259,7 @@ ${historyDesc}
             const r = gameState.relations.find(x => x.id === currentChatRelationId);
             if (!r) return;
             document.getElementById('proactiveReplySettingsPanel').classList.add('show');
-            const hours = Math.max(1, Math.min(24, (r.proactiveReplyIntervalHours != null ? r.proactiveReplyIntervalHours : 1)));
+            const hours = Math.max(0.01, Math.min(168, parseFloat(r.proactiveReplyIntervalHours) || 1));
             document.getElementById('proactiveIntervalHours').value = hours;
             const enabled = !!r.proactiveReply;
             const toggle = document.getElementById('proactiveEnableToggle');
@@ -19397,7 +19398,8 @@ ${historyDesc}
             }
             return attempt();
         }
-        function registerWithPushServer() {
+        function registerWithPushServer(opts) {
+            var silent = opts && opts.silent === true;
             var bases = getPushServerBase();
             if (!bases.length) return Promise.resolve();
             if (!('serviceWorker' in navigator) || !('PushManager' in window)) return Promise.resolve();
@@ -19488,12 +19490,12 @@ ${historyDesc}
                     if (!res.ok) return res.text().then(function(t) { throw new Error(res.status + ': ' + (t || res.statusText)); });
                     return res.json();
                 }).then(function() {
-                    if (typeof showTipModal === 'function') showTipModal('推送已注册', '后台主动回复已开启，到时间后会在通知栏收到角色消息');
+                    if (!silent && typeof showTipModal === 'function') showTipModal('推送已注册', '后台主动回复已开启，到时间后会在通知栏收到角色消息');
                 }).catch(function(e) {
-                    if (typeof showTipModal === 'function') showTipModal('推送注册失败', (e && e.message) ? e.message : '请检查网络或推送服务器是否正常');
+                    if (!silent && typeof showTipModal === 'function') showTipModal('推送注册失败', (e && e.message) ? e.message : '请检查网络或推送服务器是否正常');
                 });
             }).catch(function(e) {
-                if (typeof showTipModal === 'function') showTipModal('推送设置失败', (e && e.message) ? e.message : '请稍后重试');
+                if (!silent && typeof showTipModal === 'function') showTipModal('推送设置失败', (e && e.message) ? e.message : '请稍后重试');
             });
         }
         function urlBase64ToUint8Array(base64String) {
@@ -19553,10 +19555,24 @@ ${historyDesc}
                             if (rel) rel.lastProactiveAt = now;
                             item.gameState = JSON.parse(JSON.stringify(gameState));
                             item.historyLines = buildHistoryLinesForRelation(item.relationId);
+                            var name = (function() { var r = gameState.relations.find(x => x.id === item.relationId); return r ? (typeof getRelationDisplayName === 'function' ? getRelationDisplayName(r) : null) || r.name || 'TA' : item.name || 'TA'; })();
+                            var body = replyText.slice(0, 100) + (replyText.length > 100 ? '...' : '');
+                            var r = gameState.relations.find(x => x.id === item.relationId);
+                            if (typeof tryShowSpecialCarePopup === 'function' && r && r.starred && !r.muted) {
+                                try { tryShowSpecialCarePopup(item.relationId, { from: 'other', text: replyText }); } catch (e) {}
+                            } else if (typeof showTipModal === 'function') {
+                                try { showTipModal(name + ' 发来新消息', body); } catch (e) {}
+                            }
                             if ('Notification' in window && Notification.permission === 'granted') {
                                 const r = gameState.relations.find(x => x.id === item.relationId);
-                                const name = r ? (typeof getRelationDisplayName === 'function' ? getRelationDisplayName(r) : null) || r.name || 'TA' : item.name || 'TA';
-                                new Notification(name, { body: replyText.slice(0, 100) + (replyText.length > 100 ? '...' : ''), icon: (r && r.avatar) || undefined });
+                                const icon = (r && r.avatar) || undefined;
+                                if (navigator.serviceWorker && navigator.serviceWorker.ready) {
+                                    navigator.serviceWorker.ready.then(function(reg) {
+                                        reg.showNotification(name, { body: body, icon: icon, tag: 'proactive-' + item.relationId, data: { relationId: item.relationId, url: location.origin + location.pathname } });
+                                    }).catch(function() { try { new Notification(name, { body: body, icon: icon }); } catch (e) {} });
+                                } else {
+                                    try { new Notification(name, { body: body, icon: icon }); } catch (e) {}
+                                }
                             }
                             return openProactiveDB().then(db2 => {
                                 const wtx = db2.transaction(PROACTIVE_STORE, 'readwrite');
@@ -19565,7 +19581,12 @@ ${historyDesc}
                             });
                         }).catch(() => false);
                     })).then(results => {
-                        if (results.some(x => x)) { saveGame(); syncProactiveToIndexedDB(); if (currentChatRelationId) renderChatMessages(); }
+                        if (results.some(x => x)) {
+                            saveGame();
+                            syncProactiveToIndexedDB();
+                            if (currentChatRelationId) renderChatMessages();
+                            try { registerWithPushServer({ silent: true }); } catch (e) {}
+                        }
                     });
                 };
             }).catch(() => {});
@@ -21684,9 +21705,9 @@ ${historyDesc}
             if (!currentChatRelationId) return;
             const r = gameState.relations.find(x => x.id === currentChatRelationId);
             if (!r) return;
-            let h = parseInt(e.target.value, 10);
-            if (isNaN(h) || h < 1) h = 1;
-            if (h > 24) h = 24;
+            let h = parseFloat(e.target.value);
+            if (isNaN(h) || h < 0.01) h = 0.01;
+            if (h > 168) h = 168;
             r.proactiveReplyIntervalHours = h;
             e.target.value = h;
             saveGame();

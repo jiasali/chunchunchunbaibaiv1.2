@@ -83,16 +83,19 @@ async function callProactiveAPI(data) {
 }
 
 /* Web Push：iOS 等依赖服务端推送，收到后在此展示通知 */
+/* push-backend 发送格式为 { data: { title, body, icon, tag, data: { relationId, url } } } */
 self.addEventListener('push', (e) => {
   if (!e.data) return;
   try {
     const payload = e.data.json();
-    const title = (payload && payload.title) || '纯白人生';
-    const body = (payload && payload.body) || '';
-    const icon = (payload && payload.icon) || undefined;
-    const tag = (payload && payload.tag) || 'proactive-default';
-    const data = (payload && payload.data) || {};
-    const url = data.url || self.location.origin + self.location.pathname;
+    const d = (payload && payload.data) || payload || {};
+    const inner = (d.data && typeof d.data === 'object') ? d.data : {};
+    const title = (d.title || payload.title) || '纯白人生';
+    const body = (d.body || payload.body) || '';
+    const icon = (d.icon || payload.icon) || undefined;
+    const tag = (d.tag || payload.tag) || 'proactive-default';
+    const url = (inner.url || d.url) || self.location.origin + self.location.pathname;
+    const data = { relationId: inner.relationId, url };
     e.waitUntil(
       self.registration.showNotification(title, {
         body: body,
