@@ -917,6 +917,70 @@
             flex-direction: column;
         }
         #chatSearchPanel.show { display: flex; }
+        /* 宠物悬浮设置子页面 */
+        #petFloatingPanel {
+            display: none;
+            position: fixed;
+            inset: 0;
+            max-width: 480px;
+            margin: 0 auto;
+            background: var(--bg-canvas);
+            z-index: 265;
+            flex-direction: column;
+        }
+        #petFloatingPanel.show { display: flex; }
+        .pet-floating-panel-body {
+            flex: 1;
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
+            padding: 20px 16px 40px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        .pet-floating-section { background: var(--container); border-radius: var(--radius); box-shadow: var(--shadow-card); padding: 16px; }
+        .pet-floating-section-title { font-size: 13px; font-weight: 600; color: var(--text-muted); margin-bottom: 12px; }
+        .pet-floating-enable-row { display: flex; justify-content: space-between; align-items: center; }
+        .pet-floating-enable-label { font-size: 14px; color: var(--text-title); }
+        .pet-floating-name-input { width: 100%; padding: 12px 14px; border: 1px solid rgba(0,0,0,0.08); border-radius: var(--radius); font-size: 14px; font-family: inherit; background: var(--bg-canvas); box-sizing: border-box; }
+        .pet-floating-name-input:focus { outline: none; border-color: var(--accent-intel-alt); }
+        .pet-floating-preview-wrap { margin-top: 8px; min-height: 120px; border-radius: var(--radius); background: var(--bg-canvas); border: 1px dashed rgba(0,0,0,0.12); display: flex; align-items: center; justify-content: center; }
+        .pet-floating-preview-inner { width: 80px; height: 80px; display: flex; align-items: center; justify-content: center; }
+        .pet-floating-preview-pet { width: 64px; height: 64px; border-radius: 50%; background: linear-gradient(135deg, var(--accent-mood, #FFAEBC) 0%, var(--accent-health, #A0E7E5) 100%); display: flex; align-items: center; justify-content: center; overflow: hidden; }
+        .pet-floating-preview-pet img { width: 100%; height: 100%; object-fit: cover; }
+        .pet-floating-hint { font-size: 12px; color: var(--text-muted); margin-bottom: 12px; line-height: 1.5; }
+        .pet-floating-emotion-list { display: flex; flex-direction: column; gap: 8px; margin-bottom: 12px; }
+        .pet-floating-emotion-item { display: flex; align-items: center; gap: 12px; padding: 10px 12px; background: var(--bg-canvas); border-radius: var(--radius); }
+        .pet-floating-emotion-item input[type="text"] { flex: 1; padding: 8px 10px; border: 1px solid rgba(0,0,0,0.08); border-radius: 8px; font-size: 13px; }
+        .pet-floating-emotion-item .pet-floating-emotion-preview { width: 40px; height: 40px; border-radius: 8px; background: var(--container); overflow: hidden; flex-shrink: 0; display: flex; align-items: center; justify-content: center; }
+        .pet-floating-emotion-item .pet-floating-emotion-preview img { width: 100%; height: 100%; object-fit: cover; }
+        .pet-floating-emotion-item .pet-floating-emotion-preview { cursor: pointer; }
+        .pet-floating-emotion-item .pet-floating-emotion-pick { padding: 6px 12px; border-radius: 8px; border: 1px solid rgba(0,0,0,0.12); background: var(--container); font-size: 12px; cursor: pointer; }
+        .pet-floating-emotion-item .pet-floating-emotion-del { width: 28px; height: 28px; border-radius: 50%; border: none; background: rgba(231,76,60,0.15); color: var(--danger-color); font-size: 16px; cursor: pointer; line-height: 1; }
+        .pet-floating-emotion-item.current { border: 1px solid var(--accent-intel-alt); box-shadow: 0 0 0 2px rgba(96,165,250,0.2); }
+        .pet-floating-add-emotion-btn { padding: 10px 16px; border-radius: var(--radius); border: 1px dashed rgba(0,0,0,0.2); background: transparent; color: var(--text-muted); font-size: 14px; cursor: pointer; }
+        .pet-floating-add-emotion-btn:hover { border-color: var(--accent-intel-alt); color: var(--accent-intel-alt); }
+        /* 全局宠物悬浮组件 */
+        #petFloatingWidget {
+            position: fixed;
+            z-index: 9998;
+            width: 64px;
+            height: 64px;
+            cursor: grab;
+            touch-action: none;
+            user-select: none;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            box-shadow: var(--shadow-card);
+            transition: transform 0.15s ease;
+        }
+        #petFloatingWidget.show { display: flex; }
+        #petFloatingWidget:active { cursor: grabbing; }
+        #petFloatingWidget:hover { transform: scale(1.05); }
+        #petFloatingWidget .pet-floating-widget-inner { width: 56px; height: 56px; border-radius: 50%; overflow: hidden; display: flex; align-items: center; justify-content: center; background: linear-gradient(135deg, var(--accent-mood, #FFAEBC) 0%, var(--accent-health, #A0E7E5) 100%); }
+        #petFloatingWidget .pet-floating-widget-inner img { width: 100%; height: 100%; object-fit: cover; }
         /* 关系编辑全屏页 */
         #relationEditPanel {
             display: none;
@@ -3105,8 +3169,8 @@
             display: flex;
             align-items: center;
             gap: 10px;
-            padding: 12px 16px;
-            padding-bottom: calc(12px + var(--safe-bottom));
+            padding: 8px 14px;
+            padding-bottom: calc(8px + var(--safe-bottom));
             background: var(--container);
             border-top: 1px solid rgba(0,0,0,0.06);
             position: relative;
@@ -3206,7 +3270,7 @@
         .chat-plus-btn:active { transform: scale(0.95); }
         .chat-input {
             flex: 1;
-            padding: 12px 16px;
+            padding: 9px 14px;
             border: 1px solid #eee;
             border-radius: 20px;
             font-size: 15px;
@@ -3220,7 +3284,7 @@
             gap: 6px;
         }
         .chat-send {
-            padding: 12px 16px;
+            padding: 9px 14px;
             border: none;
             border-radius: 20px;
             background: #fff;
@@ -4728,6 +4792,17 @@
             height: 100%;
             border-radius: 0;
             box-shadow: none;
+            display: flex;
+            flex-direction: column;
+        }
+        /* 聊天设置可滑动 + 底部留白：避免手机下拉看不全最后一项 */
+        #chatSettingsModal .profile-modal-header { flex-shrink: 0; }
+        #chatSettingsModal .profile-modal-body {
+            flex: 1;
+            min-height: 0;
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
+            padding-bottom: calc(24px + 180px + var(--safe-bottom));
         }
         .chat-settings-header-row {
             display: flex;
@@ -6030,6 +6105,10 @@
             <div class="initial-author">作者：小云CLOUD qq：819914401</div>
             <div class="initial-spinner"></div>
         </div>
+    </div>
+    <!-- 全局宠物悬浮（开启后所有页面显示，可拖动，点击行为由 window.onPetFloatingClick 自定义） -->
+    <div id="petFloatingWidget" aria-label="宠物悬浮">
+        <div class="pet-floating-widget-inner"><img id="petFloatingWidgetImg" src="" alt=""></div>
     </div>
     <div class="app-wrap">
         <header class="status-bar">
@@ -8267,6 +8346,12 @@
                 </div>
             </div>
             <div class="profile-field" style="margin-bottom:6px;">
+                <div id="chatSettingsPetFloatingRow" style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid rgba(0,0,0,0.03);cursor:pointer;">
+                    <span style="font-size:14px;color:var(--text-title);">宠物悬浮</span>
+                    <span style="font-size:12px;color:var(--text-muted);">自定义外观与情绪 ></span>
+                </div>
+            </div>
+            <div class="profile-field" style="margin-bottom:6px;">
                 <div id="chatSettingsSummaryRow" style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid rgba(0,0,0,0.03);cursor:pointer;">
                     <span style="font-size:14px;color:var(--text-title);">聊天总结</span>
                     <span style="font-size:12px;color:var(--text-muted);">></span>
@@ -8338,6 +8423,49 @@
             <div class="chat-search-pane chat-search-pane-file" id="chatSearchPaneFile" style="display:none;">
                 <div class="chat-search-result-list" id="chatSearchFileResult"></div>
             </div>
+        </div>
+    </div>
+
+    <!-- 宠物悬浮设置子页面 -->
+    <div id="petFloatingPanel">
+        <div class="notification-settings-header">
+            <button type="button" class="notification-settings-back" id="petFloatingPanelBackBtn" aria-label="返回">
+                <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" width="18" height="18">
+                    <path d="M14.5 6L9 12l5.5 6" stroke="#7F8C8D" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+                </svg>
+            </button>
+            <span class="notification-settings-title">宠物悬浮</span>
+        </div>
+        <div class="pet-floating-panel-body">
+            <div class="pet-floating-section">
+                <div class="pet-floating-section-title">开启</div>
+                <div class="pet-floating-enable-row">
+                    <span class="pet-floating-enable-label">全局显示宠物悬浮</span>
+                    <label class="chat-switch" id="petFloatingEnableSwitch">
+                        <input type="checkbox" id="petFloatingEnableToggle" style="opacity:0;width:0;height:0;">
+                        <span class="chat-switch-thumb" id="petFloatingEnableThumb"></span>
+                    </label>
+                </div>
+            </div>
+            <div class="pet-floating-section">
+                <div class="pet-floating-section-title">宠物名称</div>
+                <input type="text" class="pet-floating-name-input" id="petFloatingNameInput" placeholder="输入宠物名字" maxlength="20">
+            </div>
+            <div class="pet-floating-section">
+                <div class="pet-floating-section-title">预览</div>
+                <div class="pet-floating-preview-wrap" id="petFloatingPreviewWrap">
+                    <div class="pet-floating-preview-inner" id="petFloatingPreviewInner">
+                        <div class="pet-floating-preview-pet" id="petFloatingPreviewPet"></div>
+                    </div>
+                </div>
+            </div>
+            <div class="pet-floating-section">
+                <div class="pet-floating-section-title">情绪与外观</div>
+                <div class="pet-floating-hint">每个情绪可上传对应图片，点击情绪项可设为当前显示。点击悬浮宠物时的行为与情绪变化需在代码中自定义：实现 window.onPetFloatingClick(config)，在回调内可调用 window.setPetFloatingEmotion('情绪key') 切换情绪。</div>
+                <div class="pet-floating-emotion-list" id="petFloatingEmotionList"></div>
+                <button type="button" class="pet-floating-add-emotion-btn" id="petFloatingAddEmotionBtn">+ 添加情绪</button>
+            </div>
+            <input type="file" id="petFloatingEmotionFileInput" accept="image/*" style="display:none;">
         </div>
     </div>
 
@@ -9329,6 +9457,19 @@
                 dataUrl: '',
                 name: '',
                 scopes: []
+            },
+            petFloating: {
+                enabled: false,
+                name: '小宠',
+                position: { x: 20, y: 30 },
+                currentEmotion: 'default',
+                emotions: {
+                    default: { label: '默认', img: '' },
+                    happy: { label: '开心', img: '' },
+                    sad: { label: '委屈', img: '' },
+                    angry: { label: '生气', img: '' },
+                    tired: { label: '疲惫', img: '' }
+                }
             }
         };
 
@@ -16727,6 +16868,15 @@
                 if (!Array.isArray(userSettings.customFont.scopes)) {
                     userSettings.customFont.scopes = [];
                 }
+                if (!userSettings.petFloating || typeof userSettings.petFloating !== 'object') {
+                    userSettings.petFloating = { enabled: false, name: '小宠', position: { x: 20, y: 30 }, currentEmotion: 'default', emotions: { default: { label: '默认', img: '' }, happy: { label: '开心', img: '' }, sad: { label: '委屈', img: '' }, angry: { label: '生气', img: '' }, tired: { label: '疲惫', img: '' } } };
+                }
+                const pf = userSettings.petFloating;
+                if (typeof pf.enabled !== 'boolean') pf.enabled = false;
+                if (typeof pf.name !== 'string') pf.name = '小宠';
+                if (!pf.position || typeof pf.position !== 'object') pf.position = { x: 20, y: 30 };
+                if (typeof pf.currentEmotion !== 'string') pf.currentEmotion = 'default';
+                if (!pf.emotions || typeof pf.emotions !== 'object') pf.emotions = { default: { label: '默认', img: '' }, happy: { label: '开心', img: '' }, sad: { label: '委屈', img: '' }, angry: { label: '生气', img: '' }, tired: { label: '疲惫', img: '' } };
             } else {
                 // 确保无存档时也初始化自定义地图结构
                 if (!userSettings.customMaps || typeof userSettings.customMaps !== 'object') {
@@ -16748,6 +16898,9 @@
                 }
                 if (!Array.isArray(userSettings.customFont.scopes)) {
                     userSettings.customFont.scopes = [];
+                }
+                if (!userSettings.petFloating || typeof userSettings.petFloating !== 'object') {
+                    userSettings.petFloating = { enabled: false, name: '小宠', position: { x: 20, y: 30 }, currentEmotion: 'default', emotions: { default: { label: '默认', img: '' }, happy: { label: '开心', img: '' }, sad: { label: '委屈', img: '' }, angry: { label: '生气', img: '' }, tired: { label: '疲惫', img: '' } } };
                 }
             }
             if (!gameState.relationMeetMapSelections || typeof gameState.relationMeetMapSelections !== 'object') {
@@ -20139,6 +20292,186 @@ ${historyDesc}
             document.getElementById('chatBgPanel').classList.remove('show');
         }
 
+        function openPetFloatingPanel() {
+            closeChatSettingsModal();
+            const pf = userSettings.petFloating || {};
+            document.getElementById('petFloatingEnableToggle').checked = !!pf.enabled;
+            document.getElementById('petFloatingEnableThumb').style.transform = pf.enabled ? 'translateX(18px)' : 'translateX(0)';
+            document.getElementById('petFloatingEnableSwitch').classList.toggle('on', !!pf.enabled);
+            document.getElementById('petFloatingNameInput').value = (pf.name || '小宠').toString();
+            renderPetFloatingEmotionList();
+            refreshPetFloatingPreview();
+            document.getElementById('petFloatingPanel').classList.add('show');
+        }
+        function closePetFloatingPanel() {
+            document.getElementById('petFloatingPanel').classList.remove('show');
+        }
+        function savePetFloatingConfig() {
+            if (!userSettings.petFloating) userSettings.petFloating = { enabled: false, name: '小宠', position: { x: 20, y: 30 }, currentEmotion: 'default', emotions: {} };
+            const pf = userSettings.petFloating;
+            pf.enabled = !!document.getElementById('petFloatingEnableToggle').checked;
+            pf.name = (document.getElementById('petFloatingNameInput').value || '小宠').toString().trim() || '小宠';
+            localStorage.setItem('tabula_settings', JSON.stringify(userSettings));
+            applyPetFloatingWidget();
+        }
+        function refreshPetFloatingPreview() {
+            const pf = userSettings.petFloating || {};
+            const emotions = pf.emotions || {};
+            const cur = emotions[pf.currentEmotion] || emotions['default'] || {};
+            const preview = document.getElementById('petFloatingPreviewPet');
+            if (!preview) return;
+            if (cur.img) {
+                preview.innerHTML = '<img src="' + (cur.img || '').replace(/"/g, '&quot;') + '" alt="">';
+            } else {
+                preview.innerHTML = '';
+            }
+        }
+        function renderPetFloatingEmotionList() {
+            const pf = userSettings.petFloating || {};
+            const emotions = pf.emotions || { default: { label: '默认', img: '' } };
+            const list = document.getElementById('petFloatingEmotionList');
+            if (!list) return;
+            const keys = Object.keys(emotions);
+            list.innerHTML = keys.map(function(key) {
+                const e = emotions[key] || { label: key, img: '' };
+                const label = (e.label || key).toString().replace(/"/g, '&quot;');
+                const imgSrc = (e.img || '').toString().replace(/"/g, '&quot;');
+                const isCurrent = (pf.currentEmotion || 'default') === key;
+                return '<div class="pet-floating-emotion-item' + (isCurrent ? ' current' : '') + '" data-key="' + (key || '').replace(/"/g, '&quot;') + '">' +
+                    '<div class="pet-floating-emotion-preview" title="点击设为预览">' + (imgSrc ? '<img src="' + imgSrc + '" alt="">' : '<span style="font-size:12px;color:var(--text-muted);">图</span>') + '</div>' +
+                    '<input type="text" class="pet-floating-emotion-label" value="' + label + '" placeholder="情绪名">' +
+                    '<button type="button" class="pet-floating-emotion-pick" data-key="' + (key || '').replace(/"/g, '&quot;') + '">选图</button>' +
+                    (keys.length > 1 ? '<button type="button" class="pet-floating-emotion-del" data-key="' + (key || '').replace(/"/g, '&quot;') + '" aria-label="删除">×</button>' : '') +
+                    '</div>';
+            }).join('');
+            list.querySelectorAll('.pet-floating-emotion-item').forEach(function(item) {
+                item.addEventListener('click', function(ev) {
+                    if (ev.target.closest('.pet-floating-emotion-pick') || ev.target.closest('.pet-floating-emotion-del') || ev.target.closest('.pet-floating-emotion-label')) return;
+                    const k = (item.dataset.key || '').toString();
+                    if (!k) return;
+                    const pf = userSettings.petFloating || {};
+                    pf.currentEmotion = k;
+                    renderPetFloatingEmotionList();
+                    refreshPetFloatingPreview();
+                    savePetFloatingConfig();
+                });
+            });
+            list.querySelectorAll('.pet-floating-emotion-label').forEach(function(inp) {
+                inp.addEventListener('input', function() {
+                    const item = inp.closest('.pet-floating-emotion-item');
+                    const k = item && item.dataset.key;
+                    if (k && userSettings.petFloating && userSettings.petFloating.emotions) {
+                        if (!userSettings.petFloating.emotions[k]) userSettings.petFloating.emotions[k] = { label: '', img: '' };
+                        userSettings.petFloating.emotions[k].label = inp.value.trim() || k;
+                        savePetFloatingConfig();
+                    }
+                });
+            });
+            list.querySelectorAll('.pet-floating-emotion-pick').forEach(function(btn) {
+                btn.addEventListener('click', function() {
+                    petFloatingPickEmotionKey = (btn.dataset.key || '').toString();
+                    document.getElementById('petFloatingEmotionFileInput').click();
+                });
+            });
+            list.querySelectorAll('.pet-floating-emotion-del').forEach(function(btn) {
+                btn.addEventListener('click', function() {
+                    const k = (btn.dataset.key || '').toString();
+                    if (!k || k === 'default') return;
+                    if (userSettings.petFloating && userSettings.petFloating.emotions) {
+                        delete userSettings.petFloating.emotions[k];
+                        if (userSettings.petFloating.currentEmotion === k) userSettings.petFloating.currentEmotion = 'default';
+                        renderPetFloatingEmotionList();
+                        refreshPetFloatingPreview();
+                        savePetFloatingConfig();
+                    }
+                });
+            });
+        }
+        var petFloatingPickEmotionKey = '';
+        function applyPetFloatingWidget() {
+            const pf = userSettings.petFloating || {};
+            const w = document.getElementById('petFloatingWidget');
+            const img = document.getElementById('petFloatingWidgetImg');
+            if (!w || !img) return;
+            if (!pf.enabled) {
+                w.classList.remove('show');
+                return;
+            }
+            w.classList.add('show');
+            const emotions = pf.emotions || {};
+            const cur = emotions[pf.currentEmotion] || emotions['default'] || {};
+            if (cur.img) {
+                img.src = cur.img;
+                img.style.display = '';
+            } else {
+                img.src = '';
+                img.style.display = 'none';
+            }
+            const pos = pf.position || { x: 20, y: 30 };
+            const x = Math.min(90, Math.max(5, Number(pos.x) || 20));
+            const y = Math.min(85, Math.max(5, Number(pos.y) || 30));
+            w.style.left = x + '%';
+            w.style.top = y + '%';
+            w.style.transform = 'translate(-50%, -50%)';
+        }
+        function initPetFloatingWidget() {
+            const w = document.getElementById('petFloatingWidget');
+            if (!w) return;
+            var dragging = false, startX = 0, startY = 0, startLeft = 0, startTop = 0, hasMoved = false;
+            function getPercentX(px) { return Math.min(95, Math.max(5, (px / window.innerWidth) * 100)); }
+            function getPercentY(py) { return Math.min(90, Math.max(5, (py / window.innerHeight) * 100)); }
+            function onStart(e) {
+                e.preventDefault();
+                dragging = true;
+                hasMoved = false;
+                const t = e.touches ? e.touches[0] : e;
+                startX = t.clientX;
+                startY = t.clientY;
+                const l = parseFloat(w.style.left) || 20;
+                const t2 = parseFloat(w.style.top) || 30;
+                startLeft = (l / 100) * window.innerWidth;
+                startTop = (t2 / 100) * window.innerHeight;
+            }
+            function onMove(e) {
+                if (!dragging) return;
+                e.preventDefault();
+                const t = e.touches ? e.touches[0] : e;
+                const dx = t.clientX - startX, dy = t.clientY - startY;
+                if (Math.abs(dx) > 5 || Math.abs(dy) > 5) hasMoved = true;
+                const newLeft = startLeft + (t.clientX - startX);
+                const newTop = startTop + (t.clientY - startY);
+                w.style.left = getPercentX(newLeft) + '%';
+                w.style.top = getPercentY(newTop) + '%';
+            }
+            function onEnd(e) {
+                if (!dragging) return;
+                e.preventDefault();
+                dragging = false;
+                const pf = userSettings.petFloating || {};
+                if (!pf.position) pf.position = { x: 20, y: 30 };
+                pf.position.x = parseFloat(w.style.left) || 20;
+                pf.position.y = parseFloat(w.style.top) || 30;
+                savePetFloatingConfig();
+                if (!hasMoved && typeof window.onPetFloatingClick === 'function') {
+                    window.onPetFloatingClick(pf);
+                }
+            }
+            window.setPetFloatingEmotion = function(key) {
+                const pf = userSettings.petFloating || {};
+                if (pf.emotions && pf.emotions[key]) {
+                    pf.currentEmotion = key;
+                    savePetFloatingConfig();
+                    applyPetFloatingWidget();
+                }
+            };
+            w.addEventListener('mousedown', onStart);
+            w.addEventListener('touchstart', onStart, { passive: false });
+            document.addEventListener('mousemove', onMove);
+            document.addEventListener('touchmove', onMove, { passive: false });
+            document.addEventListener('mouseup', onEnd);
+            document.addEventListener('touchend', onEnd);
+        }
+
         function getAvatarStyleCss(style, customCss, scopeSelector, isPreview) {
             const sel = scopeSelector || '__SCOPE__';
             const avatarSel = isPreview ? sel : (sel + ' .chat-msg-avatar');
@@ -22270,6 +22603,9 @@ ${historyDesc}
         document.getElementById('chatSettingsBgRow').addEventListener('click', () => {
             openChatBgPanel();
         });
+        document.getElementById('chatSettingsPetFloatingRow').addEventListener('click', () => {
+            openPetFloatingPanel();
+        });
         document.getElementById('chatSettingsAvatarStyleRow').addEventListener('click', () => {
             openChatAvatarStylePanel();
         });
@@ -22293,6 +22629,49 @@ ${historyDesc}
             });
         });
         document.getElementById('chatBgPanelBackBtn').addEventListener('click', closeChatBgPanel);
+        document.getElementById('petFloatingPanelBackBtn').addEventListener('click', closePetFloatingPanel);
+        document.getElementById('petFloatingEnableToggle').addEventListener('change', function(e) {
+            const en = !!e.target.checked;
+            document.getElementById('petFloatingEnableThumb').style.transform = en ? 'translateX(18px)' : 'translateX(0)';
+            document.getElementById('petFloatingEnableSwitch').classList.toggle('on', en);
+            savePetFloatingConfig();
+        });
+        document.getElementById('petFloatingNameInput').addEventListener('input', savePetFloatingConfig);
+        document.getElementById('petFloatingAddEmotionBtn').addEventListener('click', function() {
+            const pf = userSettings.petFloating || {};
+            if (!pf.emotions) pf.emotions = { default: { label: '默认', img: '' } };
+            const k = 'emotion_' + Date.now();
+            pf.emotions[k] = { label: '新情绪', img: '' };
+            renderPetFloatingEmotionList();
+            savePetFloatingConfig();
+        });
+        document.getElementById('petFloatingEmotionFileInput').addEventListener('change', function(e) {
+            const file = e.target.files && e.target.files[0];
+            e.target.value = '';
+            if (!file || !file.type.startsWith('image/') || !petFloatingPickEmotionKey) return;
+            const k = petFloatingPickEmotionKey;
+            const pf = userSettings.petFloating || {};
+            if (!pf.emotions) pf.emotions = {};
+            if (!pf.emotions[k]) pf.emotions[k] = { label: k, img: '' };
+            const reader = new FileReader();
+            reader.onload = function() {
+                const raw = reader.result;
+                if (typeof compressImageForStorage === 'function') {
+                    compressImageForStorage(raw, 400, 0.85).then(function(compressed) {
+                        pf.emotions[k].img = compressed;
+                        renderPetFloatingEmotionList();
+                        refreshPetFloatingPreview();
+                        savePetFloatingConfig();
+                    });
+                } else {
+                    pf.emotions[k].img = raw;
+                    renderPetFloatingEmotionList();
+                    refreshPetFloatingPreview();
+                    savePetFloatingConfig();
+                }
+            };
+            reader.readAsDataURL(file);
+        });
         document.getElementById('chatTimestampPanelBackBtn').addEventListener('click', closeChatTimestampPanel);
         document.getElementById('chatTimestampPanelCloseBtn').addEventListener('click', closeChatTimestampPanel);
         document.getElementById('chatTimestampEnableToggle').addEventListener('change', (e) => {
@@ -22497,6 +22876,8 @@ ${historyDesc}
         if (typeof applyThemeTokens === 'function') applyThemeTokens();
         if (typeof applyCustomIcons === 'function') applyCustomIcons();
         if (typeof applyCustomFont === 'function') applyCustomFont();
+        if (typeof applyPetFloatingWidget === 'function') applyPetFloatingWidget();
+        initPetFloatingWidget();
         bindWorldPresetImportExport();
         renderMapGrids();
         renderStats();
