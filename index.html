@@ -1332,6 +1332,132 @@
             cursor: grabbing;
             box-shadow: 0 2px 6px rgba(15,23,42,0.25);
         }
+        /* 头像样式设置子页面 */
+        #chatAvatarStylePanel {
+            display: none;
+            position: fixed;
+            inset: 0;
+            max-width: 480px;
+            margin: 0 auto;
+            background: var(--bg-canvas);
+            z-index: 260;
+            flex-direction: column;
+        }
+        #chatAvatarStylePanel.show { display: flex; }
+        .chat-avatar-style-panel-body {
+            padding: 20px 16px 28px;
+            flex: 1;
+            overflow: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        .chat-avatar-style-preset-row { display: flex; flex-direction: column; gap: 10px; }
+        .chat-avatar-style-label {
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+        }
+        .chat-avatar-style-preset-btns {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        .chat-avatar-style-preset-btn {
+            padding: 10px 18px;
+            border-radius: var(--radius);
+            border: 1.5px solid rgba(0,0,0,0.1);
+            background: var(--container);
+            font-size: 14px;
+            font-weight: 500;
+            color: var(--text-body);
+            cursor: pointer;
+            font-family: inherit;
+            transition: all 0.2s;
+        }
+        .chat-avatar-style-preset-btn:hover {
+            border-color: var(--accent-intel-alt);
+            color: var(--accent-intel-alt);
+        }
+        .chat-avatar-style-preset-btn.active {
+            background: var(--accent-intel-alt);
+            border-color: var(--accent-intel-alt);
+            color: #fff;
+        }
+        .chat-avatar-style-custom-wrap { display: flex; flex-direction: column; gap: 8px; }
+        .chat-avatar-style-css-input {
+            width: 100%;
+            min-height: 80px;
+            padding: 12px 14px;
+            border: 1px solid rgba(0,0,0,0.08);
+            border-radius: var(--radius);
+            font-size: 13px;
+            font-family: monospace;
+            background: var(--container);
+            color: var(--text-body);
+            resize: vertical;
+            box-sizing: border-box;
+        }
+        .chat-avatar-style-css-input:focus {
+            outline: none;
+            border-color: var(--accent-intel-alt);
+        }
+        .chat-avatar-style-hint {
+            font-size: 12px;
+            color: var(--text-muted);
+            line-height: 1.5;
+        }
+        .chat-avatar-style-preview-card {
+            background: var(--container);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow-card);
+            padding: 16px;
+        }
+        .chat-avatar-style-preview-wrap {
+            margin-top: 12px;
+            padding: 16px;
+            background: radial-gradient(circle at 0% 0%, rgba(255,255,255,0.98), rgba(248,250,252,0.96));
+            border-radius: var(--radius);
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+        .chat-avatar-style-preview-row {
+            display: flex;
+            align-items: flex-end;
+            gap: 8px;
+        }
+        .chat-avatar-style-preview-row.mine { flex-direction: row-reverse; }
+        .chat-avatar-style-preview-avatar {
+            width: 36px;
+            height: 36px;
+            flex-shrink: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            color: var(--text-title);
+            background: #fff;
+            box-shadow: var(--shadow-card);
+            overflow: hidden;
+        }
+        .chat-avatar-style-preview-avatar img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        .chat-avatar-style-preview-bubble {
+            max-width: 70%;
+            padding: 10px 14px;
+            border-radius: 14px;
+            font-size: 14px;
+            line-height: 1.4;
+            background: #fff;
+            box-shadow: var(--shadow-card);
+            color: var(--text-body);
+        }
         .chat-summary-card {
             background: var(--container);
             border-radius: var(--radius);
@@ -1710,6 +1836,11 @@
             object-fit: cover;
         }
         .chat-msg.mine .chat-msg-avatar { background: #fff; }
+        @keyframes chat-msg-appear {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .chat-msg.chat-msg-appear { animation: chat-msg-appear 0.35s ease-out forwards; }
 
         /* 语音通话 P1 界面（QQ 风格抽象版） */
         .voice-call-panel {
@@ -5896,7 +6027,7 @@
     <div id="initialLoader" class="initial-loader">
         <div class="initial-loader-inner">
             <div class="initial-title">纯白人生</div>
-            <div class="initial-author">作者：小云</div>
+            <div class="initial-author">作者：小云CLOUD qq：819914401</div>
             <div class="initial-spinner"></div>
         </div>
     </div>
@@ -8036,9 +8167,9 @@
         <div class="profile-modal-body">
             <div class="profile-info-row" style="margin-bottom:20px;align-items:center;cursor:pointer;">
                 <div class="profile-info-item" style="display:flex;align-items:center;gap:12px;background:transparent;padding:0;">
-                    <div class="relation-avatar" style="width:44px;height:44px;box-shadow:var(--shadow-card);flex-shrink:0;">
-                        <img id="chatSettingsAvatarImg" src="" alt="" style="width:100%;height:100%;border-radius:50%;object-fit:cover;display:none;">
-                        <div id="chatSettingsAvatarPlaceholder" style="width:100%;height:100%;border-radius:50%;display:flex;align-items:center;justify-content:center;background:#fff;color:var(--text-title);font-weight:700;">?</div>
+                    <div class="relation-avatar chat-settings-header-avatar" id="chatSettingsHeaderAvatar" style="width:44px;height:44px;box-shadow:var(--shadow-card);flex-shrink:0;overflow:hidden;">
+                        <img id="chatSettingsAvatarImg" src="" alt="" style="width:100%;height:100%;object-fit:cover;display:none;">
+                        <div id="chatSettingsAvatarPlaceholder" style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;background:#fff;color:var(--text-title);font-weight:700;">?</div>
                     </div>
                     <div>
                         <div id="chatSettingsName" style="font-size:15px;color:var(--text-title);font-weight:600;">昵称</div>
@@ -8115,6 +8246,12 @@
                 <div id="chatSettingsTimestampRow" style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid rgba(0,0,0,0.03);cursor:pointer;">
                     <span style="font-size:14px;color:var(--text-title);">时间戳设置</span>
                     <span style="font-size:12px;color:var(--text-muted);">显示与位置预览 &gt;</span>
+                </div>
+            </div>
+            <div class="profile-field" style="margin-bottom:6px;">
+                <div id="chatSettingsAvatarStyleRow" style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid rgba(0,0,0,0.03);cursor:pointer;">
+                    <span style="font-size:14px;color:var(--text-title);">头像样式</span>
+                    <span style="font-size:12px;color:var(--text-muted);">方框/圆框/自定义 &gt;</span>
                 </div>
             </div>
             <div class="profile-field" style="margin-bottom:6px;">
@@ -8503,6 +8640,47 @@
             <div style="margin-top:auto;">
                 <button type="button" class="relation-timeline-close-panel-btn" id="chatTimestampPanelCloseBtn">返回聊天</button>
             </div>
+        </div>
+    </div>
+
+    <!-- 头像样式设置子页面 -->
+    <div id="chatAvatarStylePanel">
+        <div class="notification-settings-header">
+            <button type="button" class="notification-settings-back" id="chatAvatarStylePanelBackBtn" aria-label="返回">
+                <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" width="18" height="18">
+                    <path d="M14.5 6L9 12l5.5 6" stroke="#7F8C8D" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+                </svg>
+            </button>
+            <span class="notification-settings-title">头像样式</span>
+        </div>
+        <div class="chat-avatar-style-panel-body">
+            <div class="chat-avatar-style-preset-row">
+                <span class="chat-avatar-style-label">预设样式</span>
+                <div class="chat-avatar-style-preset-btns">
+                    <button type="button" class="chat-avatar-style-preset-btn" data-preset="circle">圆框</button>
+                    <button type="button" class="chat-avatar-style-preset-btn" data-preset="square">方框</button>
+                    <button type="button" class="chat-avatar-style-preset-btn" data-preset="custom">自定义</button>
+                </div>
+            </div>
+            <div class="chat-avatar-style-custom-wrap" id="chatAvatarStyleCustomWrap" style="display:none;">
+                <span class="chat-avatar-style-label">自定义 CSS（作用于 .chat-msg-avatar）</span>
+                <textarea id="chatAvatarStyleCssInput" class="chat-avatar-style-css-input" spellcheck="false" placeholder="例如：border-radius: 8px; border: 2px solid var(--accent-mood);"></textarea>
+                <div class="chat-avatar-style-hint">写 CSS 即可，选择器已限定为聊天头像。支持 var(--text-title)、var(--radius) 等变量。</div>
+            </div>
+            <div class="chat-avatar-style-preview-card">
+                <span class="chat-avatar-style-label">预览（保存后聊天界面同步变化）</span>
+                <div class="chat-avatar-style-preview-wrap" id="chatAvatarStylePreviewWrap">
+                    <div class="chat-avatar-style-preview-row">
+                        <div class="chat-msg-avatar chat-avatar-style-preview-avatar" id="chatAvatarStylePreviewOther"><span>Ta</span></div>
+                        <div class="chat-avatar-style-preview-bubble">这是一条对方消息示例</div>
+                    </div>
+                    <div class="chat-avatar-style-preview-row mine">
+                        <div class="chat-msg-avatar chat-avatar-style-preview-avatar" id="chatAvatarStylePreviewMine"><span>我</span></div>
+                        <div class="chat-avatar-style-preview-bubble">这是我的一条消息示例</div>
+                    </div>
+                </div>
+            </div>
+            <button type="button" class="relation-timeline-close-panel-btn" id="chatAvatarStylePanelSaveBtn">保存并返回</button>
         </div>
     </div>
 
@@ -11190,8 +11368,8 @@
         function sendStickerMessage(src, desc) {
             if (!currentChatRelationId || !src) return;
             if (!gameState.chatLogs[currentChatRelationId]) gameState.chatLogs[currentChatRelationId] = [];
-            gameState.chatLogs[currentChatRelationId].push({ from: 'me', stickerSrc: src, stickerDesc: desc || '' });
-            renderChatMessages();
+            gameState.chatLogs[currentChatRelationId].push({ from: 'me', stickerSrc: src, stickerDesc: desc || '', sentAt: Date.now() });
+            renderChatMessages(true);
             closeStickerPickerModal();
             saveGame();
         }
@@ -12556,9 +12734,10 @@
                     voiceDataUrl: voiceMsgPending.dataUrl,
                     durationSec: voiceMsgPending.durationSec,
                     desc: (document.getElementById('voiceMsgDescInput').value || '').trim()
-                }
+                },
+                sentAt: Date.now()
             });
-            renderChatMessages();
+            renderChatMessages(true);
             closeVoiceMsgModal();
             saveGame();
         }
@@ -13182,7 +13361,8 @@
                     lng: locationPending.lng,
                     label: labelInput,
                     type: actionType
-                }
+                },
+                sentAt: Date.now()
             };
             gameState.chatLogs[currentChatRelationId].push(msg);
             // share-location 模式下，记录共享状态并更新状态栏，可多次更新位置
@@ -13195,7 +13375,7 @@
                     startedAt: Date.now()
                 });
             }
-            renderChatMessages();
+            renderChatMessages(true);
             closeLocationModal();
             saveGame();
         }
@@ -14309,8 +14489,8 @@
                     if (lrcLines && lrcLines.length > 0) music.lyricsText = lrcLines.map(function(l) { return l.text; }).join('\n');
                 } catch (e) {}
             }
-            gameState.chatLogs[currentChatRelationId].push({ from: 'me', music });
-            renderChatMessages();
+            gameState.chatLogs[currentChatRelationId].push({ from: 'me', music, sentAt: Date.now() });
+            renderChatMessages(true);
             closeMusicPanel();
             saveGame();
         }
@@ -14515,20 +14695,21 @@
             var list = gameState.chatLogs[currentChatRelationId];
             if (!list) gameState.chatLogs[currentChatRelationId] = list = [];
             compressImageForStorage(imageSendPending.src, 1200, 0.9).then(function(compressed) {
-                list.push({ from: 'me', imageSrc: compressed, imageDesc: imageSendPending.desc || '' });
-                renderChatMessages();
+                list.push({ from: 'me', imageSrc: compressed, imageDesc: imageSendPending.desc || '', sentAt: Date.now() });
+                renderChatMessages(true);
                 closeImageSendModal();
                 saveGame();
             });
         }
 
-        function renderChatMessages() {
+        function renderChatMessages(animateLast) {
             const container = document.getElementById('chatMessagesContent');
             const logs = (gameState.chatLogs && currentChatRelationId && gameState.chatLogs[currentChatRelationId]) || [];
             const r = gameState.relations.find(x => x.id === currentChatRelationId);
             const chatPanel = document.getElementById('chatPanel');
             if (chatPanel && currentChatRelationId) chatPanel.dataset.chatRel = currentChatRelationId;
             applyBubbleStyleOverrideForRelation(r);
+            applyChatAvatarStyleForRelation(r);
             const otherName = r ? r.name[0] : '?';
             const tsEnabled = !!(r && r.chatTimestampEnabled);
             const tsMyX = r && typeof r.chatTsMyX === 'number' ? r.chatTsMyX : 82;
@@ -14537,6 +14718,7 @@
             const tsOtherY = r && typeof r.chatTsOtherY === 'number' ? r.chatTsOtherY : 78;
             const baseTs = Date.now() - Math.max(0, logs.length - 1) * 3 * 60 * 1000;
             container.innerHTML = logs.map((msg, idx) => {
+                const tsMs = (msg.sentAt != null && isFinite(msg.sentAt)) ? msg.sentAt : (baseTs + idx * 3 * 60 * 1000);
                 if (msg.from === 'god' || msg.godView) {
                     const godText = (msg.text || '').toString().trim();
                     const godContent = godText ? ('<div class="chat-msg-god-label">上帝视角</div><div class="chat-msg-god-bubble">' + (escapeHtml(godText).replace(/\n/g, '<br>')) + '</div>') : '';
@@ -14845,7 +15027,6 @@
                 const avatarContent = msg.from === 'me' ? myAvatar : (r && r.avatar ? `<img src="${escapeHtml(r.avatar)}" alt="">` : otherName);
                 let tsHtml = '';
                 if (tsEnabled) {
-                    const tsMs = baseTs + idx * 3 * 60 * 1000;
                     const tsText = formatChatTimestamp(tsMs);
                     if (tsText) {
                         const isMine = msg.from === 'me';
@@ -15138,6 +15319,9 @@
                 }
             })();
             container.scrollTop = container.scrollHeight;
+            if (animateLast && container && container.lastElementChild) {
+                container.lastElementChild.classList.add('chat-msg-appear');
+            }
             updateMusicPlayerUI();
             updateListenTogetherBar();
         }
@@ -15229,7 +15413,7 @@
             const text = (input.value || '').trim();
             if (!text || !currentChatRelationId) return;
             if (!gameState.chatLogs[currentChatRelationId]) gameState.chatLogs[currentChatRelationId] = [];
-            var payload = { from: 'me', text: text };
+            var payload = { from: 'me', text: text, sentAt: Date.now() };
             if (pendingReplyTo && pendingReplyTo.from != null && pendingReplyTo.preview) {
                 payload.replyTo = { from: pendingReplyTo.from, preview: pendingReplyTo.preview };
             }
@@ -15240,7 +15424,7 @@
                 var bar = document.getElementById('chatReplyPreview');
                 if (bar) bar.classList.remove('show');
             }
-            renderChatMessages();
+            renderChatMessages(true);
             saveGame();
             if (typeof flushPendingFirstMessages === 'function') flushPendingFirstMessages();
         }
@@ -15550,6 +15734,15 @@
                 }
                 if (!replyText && !fileContent) throw new Error('未返回有效对话内容');
                 if (!relationIdForReply || !gameState.chatLogs[relationIdForReply]) return;
+                var heartAnimDelay = 320;
+                function heartDelay(ms) { return new Promise(function(r) { setTimeout(r, ms || heartAnimDelay); }); }
+                function heartRenderAndAnimate() {
+                    if (currentChatRelationId === relationIdForReply && typeof renderChatMessages === 'function') {
+                        renderChatMessages();
+                        var c = document.getElementById('chatMessagesContent');
+                        if (c && c.lastElementChild) c.lastElementChild.classList.add('chat-msg-appear');
+                    }
+                }
                 if (replyText) {
                     var sentences = replyText.split(/(?<=[。？！?!?\n])/).map(function(s) { return s.trim(); }).filter(Boolean);
                     if (sentences.length === 0) sentences = [replyText];
@@ -15560,7 +15753,11 @@
                     var chunkSize = Math.max(1, Math.ceil(sentences.length / maxBubbles));
                     for (var i = 0; i < sentences.length; i += chunkSize) {
                         var chunk = sentences.slice(i, i + chunkSize).join('').trim();
-                        if (chunk) gameState.chatLogs[relationIdForReply].push({ from: 'other', text: chunk });
+                        if (chunk) {
+                            gameState.chatLogs[relationIdForReply].push({ from: 'other', text: chunk, sentAt: Date.now() });
+                            heartRenderAndAnimate();
+                            await heartDelay();
+                        }
                     }
                     var gain = detectMoneyGainFromText(replyText);
                     if (gain > 0) {
@@ -15598,7 +15795,9 @@
                     if (lastFileMsg && lastFileMsg.file) {
                         lastFileMsg.file.aiHandled = true;
                     }
-                    gameState.chatLogs[relationIdForReply].push({ from: 'other', file: payload });
+                    gameState.chatLogs[relationIdForReply].push({ from: 'other', file: payload, sentAt: Date.now() });
+                    heartRenderAndAnimate();
+                    await heartDelay();
                 }
                 if (receiveActions && (lastOutTransferMsg || lastOutRedpackMsg)) {
                     var ra = receiveActions || {};
@@ -15609,9 +15808,12 @@
                             transferAccepted: {
                                 amount: lastOutTransferMsg.transfer.amount,
                                 note: lastOutTransferMsg.transfer.note
-                            }
+                            },
+                            sentAt: Date.now()
                         };
                         gameState.chatLogs[relationIdForReply].push(otherMsg);
+                        heartRenderAndAnimate();
+                        await heartDelay();
                     }
                     if (ra.acceptLastRedpack === true && lastOutRedpackMsg && lastOutRedpackMsg.redpack) {
                         lastOutRedpackMsg.redpack.opened = true;
@@ -15625,8 +15827,11 @@
                     if (em.type === 'momentCard' && em.text) {
                         gameState.chatLogs[relationIdForReply].push({
                             from: 'other',
-                            momentCard: { authorName: otherName, text: (em.text || '').toString(), forwardedByLabel: '来自' + otherName + '的动态' }
+                            momentCard: { authorName: otherName, text: (em.text || '').toString(), forwardedByLabel: '来自' + otherName + '的动态' },
+                            sentAt: Date.now()
                         });
+                        heartRenderAndAnimate();
+                        await heartDelay();
                     } else if (em.type === 'sticker' && r.heartReplySendStickers && r.stickers && Array.isArray(r.stickers)) {
                         var idx = typeof em.stickerIndex === 'number' ? em.stickerIndex : parseInt(em.stickerIndex, 10);
                         if (!isNaN(idx) && idx >= 0 && idx < r.stickers.length) {
@@ -15634,32 +15839,47 @@
                             gameState.chatLogs[relationIdForReply].push({
                                 from: 'other',
                                 stickerSrc: (s && s.stickerSrc) ? s.stickerSrc : (s && s.src) ? s.src : '',
-                                stickerDesc: (s && s.stickerDesc) ? s.stickerDesc : (s && s.desc) ? s.desc : ''
+                                stickerDesc: (s && s.stickerDesc) ? s.stickerDesc : (s && s.desc) ? s.desc : '',
+                                sentAt: Date.now()
                             });
+                            heartRenderAndAnimate();
+                            await heartDelay();
                         }
                     } else if (em.type === 'voiceMsg') {
                         var dur = typeof em.durationSec === 'number' ? em.durationSec : parseInt(em.durationSec, 10);
                         if (isNaN(dur) || dur < 0) dur = 3;
                         gameState.chatLogs[relationIdForReply].push({
                             from: 'other',
-                            voiceMsg: { durationSec: dur, desc: (em.description || em.desc || '').toString().trim() }
+                            voiceMsg: { durationSec: dur, desc: (em.description || em.desc || '').toString().trim() },
+                            sentAt: Date.now()
                         });
+                        heartRenderAndAnimate();
+                        await heartDelay();
                     } else if (em.type === 'gift' && em.name) {
                         gameState.chatLogs[relationIdForReply].push({
                             from: 'other',
-                            gift: { name: (em.name || '').toString(), desc: (em.desc || em.description || '').toString() }
+                            gift: { name: (em.name || '').toString(), desc: (em.desc || em.description || '').toString() },
+                            sentAt: Date.now()
                         });
+                        heartRenderAndAnimate();
+                        await heartDelay();
                     } else if (em.type === 'music' && em.trackName) {
                         gameState.chatLogs[relationIdForReply].push({
                             from: 'other',
-                            music: { trackName: (em.trackName || '').toString(), artistName: (em.artistName || '').toString() }
+                            music: { trackName: (em.trackName || '').toString(), artistName: (em.artistName || '').toString() },
+                            sentAt: Date.now()
                         });
+                        heartRenderAndAnimate();
+                        await heartDelay();
                     } else if (em.type === 'sharedContact' && (em.shareSelf === true || (r && (em.name || em.remarkName)) || (em.name || em.remarkName))) {
                         if (em.shareSelf && r) {
                             gameState.chatLogs[relationIdForReply].push({
                                 from: 'other',
-                                sharedContact: { name: (r.name || '').toString(), remarkName: (r.remarkName || r.name || '').toString(), avatar: (r.avatar || '').toString(), shareSelf: true }
+                                sharedContact: { name: (r.name || '').toString(), remarkName: (r.remarkName || r.name || '').toString(), avatar: (r.avatar || '').toString(), shareSelf: true },
+                                sentAt: Date.now()
                             });
+                            heartRenderAndAnimate();
+                            await heartDelay();
                         } else if (em.name || em.remarkName) {
                             var sc = {
                                 name: (em.name || '').toString(),
@@ -15672,16 +15892,26 @@
                                 age: typeof em.age === 'number' ? em.age : (em.age != null ? parseInt(em.age, 10) : undefined),
                                 meetTime: (em.meetTime || '').toString()
                             };
-                            gameState.chatLogs[relationIdForReply].push({ from: 'other', sharedContact: sc });
+                            gameState.chatLogs[relationIdForReply].push({ from: 'other', sharedContact: sc, sentAt: Date.now() });
+                            heartRenderAndAnimate();
+                            await heartDelay();
                         }
                     } else if (em.type === 'inviteListenTogether') {
-                        gameState.chatLogs[relationIdForReply].push({ from: 'other', inviteListenTogether: true });
+                        gameState.chatLogs[relationIdForReply].push({ from: 'other', inviteListenTogether: true, sentAt: Date.now() });
+                        heartRenderAndAnimate();
+                        await heartDelay();
                     } else if (em.type === 'inviteLocationShare') {
-                        gameState.chatLogs[relationIdForReply].push({ from: 'other', inviteLocationShare: true });
+                        gameState.chatLogs[relationIdForReply].push({ from: 'other', inviteLocationShare: true, sentAt: Date.now() });
+                        heartRenderAndAnimate();
+                        await heartDelay();
                     } else if (em.type === 'inviteVoiceCall') {
-                        gameState.chatLogs[relationIdForReply].push({ from: 'other', inviteVoiceCall: true });
+                        gameState.chatLogs[relationIdForReply].push({ from: 'other', inviteVoiceCall: true, sentAt: Date.now() });
+                        heartRenderAndAnimate();
+                        await heartDelay();
                     } else if (em.type === 'inviteVideoCall') {
-                        gameState.chatLogs[relationIdForReply].push({ from: 'other', inviteVideoCall: true });
+                        gameState.chatLogs[relationIdForReply].push({ from: 'other', inviteVideoCall: true, sentAt: Date.now() });
+                        heartRenderAndAnimate();
+                        await heartDelay();
                     }
                 }
                 var otherDisplayName = (r && typeof getRelationDisplayName === 'function') ? getRelationDisplayName(r) : (r && (r.remarkName || r.name)) || '对方';
@@ -15730,7 +15960,7 @@
                             var data = await res.json();
                             var godText = (data.choices && data.choices[0] && data.choices[0].message && data.choices[0].message.content) ? data.choices[0].message.content.trim() : '';
                             if (godText && godText.length >= 500 && gameState.chatLogs[relationIdForReply]) {
-                                gameState.chatLogs[relationIdForReply].push({ from: 'god', text: godText });
+                                gameState.chatLogs[relationIdForReply].push({ from: 'god', text: godText, sentAt: Date.now() });
                                 if (currentChatRelationId === relationIdForReply) renderChatMessages();
                                 saveGame();
                             }
@@ -17397,8 +17627,10 @@ ${historyDesc}
                             imageSrc: post.imageSrc || '',
                             time: post.time,
                             circleName: circle ? circle.name : ''
-                        }
+                        },
+                        sentAt: Date.now()
                     });
+                    if (currentChatRelationId === relationId && typeof renderChatMessages === 'function') renderChatMessages(true);
                     saveGame();
                     document.getElementById('momentForwardModal').classList.remove('show');
                     document.getElementById('momentForwardOverlay').classList.remove('show');
@@ -18198,9 +18430,10 @@ ${historyDesc}
                     desc: g.desc || g.description || '',
                     price: g.price != null ? g.price : null,
                     imageUrl: g.imageUrl || g.img || g.image || getGiftImageUrl(g.name || g.title)
-                }
+                },
+                sentAt: Date.now()
             });
-            renderChatMessages();
+            renderChatMessages(true);
             closeGiftDetailModal();
             closeGiftPanel();
             saveGame();
@@ -18667,8 +18900,8 @@ ${historyDesc}
                     if (isImage) payload.dataUrl = url;
                     else if (typeof LZString !== 'undefined' && url.length > 1000) { try { payload.dataUrlCompressed = LZString.compress(url); } catch (e) { payload.dataUrl = url; } } else payload.dataUrl = url;
                     if (fileSendModalCache.iconDataUrl) payload.iconDataUrl = fileSendModalCache.iconDataUrl;
-                    list.push({ from: 'me', file: payload });
-                    renderChatMessages();
+                    list.push({ from: 'me', file: payload, sentAt: Date.now() });
+                    renderChatMessages(true);
                     saveGame();
                     closeFileSendModal();
                 }
@@ -18708,9 +18941,10 @@ ${historyDesc}
                                 name: r.name || '',
                                 remarkName: r.remarkName || '',
                                 avatar: r.avatar || ''
-                            }
+                            },
+                            sentAt: Date.now()
                         });
-                        renderChatMessages();
+                        renderChatMessages(true);
                         closeShareContactModal();
                         saveGame();
                     });
@@ -18900,6 +19134,26 @@ ${historyDesc}
                 ph.style.display = 'flex';
                 ph.textContent = (name || '?')[0];
             }
+            const headerAvatar = document.getElementById('chatSettingsHeaderAvatar');
+            if (headerAvatar) {
+                const avStyle = r.chatAvatarStyle || 'circle';
+                const avCss = (r.chatAvatarStyleCss || '').trim();
+                headerAvatar.style.borderRadius = '';
+                img.style.borderRadius = '';
+                let styleTag = document.getElementById('chatSettingsHeaderAvatarStyle');
+                if (!styleTag) {
+                    styleTag = document.createElement('style');
+                    styleTag.id = 'chatSettingsHeaderAvatarStyle';
+                    document.head.appendChild(styleTag);
+                }
+                if (avStyle === 'square') {
+                    styleTag.textContent = '#chatSettingsHeaderAvatar, #chatSettingsHeaderAvatar img { border-radius: 0 !important; }';
+                } else if (avStyle === 'custom' && avCss) {
+                    styleTag.textContent = '#chatSettingsHeaderAvatar { ' + avCss + ' }\n#chatSettingsHeaderAvatar img { border-radius: inherit; }';
+                } else {
+                    styleTag.textContent = '#chatSettingsHeaderAvatar, #chatSettingsHeaderAvatar img { border-radius: 50% !important; }';
+                }
+            }
             const mute = !!r.muted;
             const pinned = !!r.pinned;
             const starred = !!r.starred;
@@ -19002,7 +19256,7 @@ ${historyDesc}
                         if (typeof LZString !== 'undefined' && dataUrl.length > 1000) {
                             try { payload.dataUrlCompressed = LZString.compress(dataUrl); } catch (e) { payload.dataUrl = dataUrl; }
                         } else { payload.dataUrl = dataUrl; }
-                        list.push({ from: 'me', file: payload });
+                        list.push({ from: 'me', file: payload, sentAt: Date.now() });
                         renderChatMessages();
                         saveGame();
                     }
@@ -19517,6 +19771,39 @@ ${historyDesc}
             if (!b64) return '';
             return b64.replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
         }
+        function getRealTimeContextText() {
+            try {
+                const now = new Date();
+                const week = ['日', '一', '二', '三', '四', '五', '六'];
+                const pad2 = (n) => String(n).padStart(2, '0');
+                const tzMin = -now.getTimezoneOffset();
+                const sign = tzMin >= 0 ? '+' : '-';
+                const tzAbs = Math.abs(tzMin);
+                const tzH = pad2(Math.floor(tzAbs / 60));
+                const tzM = pad2(tzAbs % 60);
+                const y = now.getFullYear();
+                const mo = pad2(now.getMonth() + 1);
+                const d = pad2(now.getDate());
+                const hh = pad2(now.getHours());
+                const mm = pad2(now.getMinutes());
+                const ss = pad2(now.getSeconds());
+                const tz = 'UTC' + sign + tzH + ':' + tzM;
+                return '【当前现实时间】\n' +
+                    (y + '-' + mo + '-' + d + ' 周' + week[now.getDay()] + ' ' + hh + ':' + mm + ':' + ss + '（' + tz + '）') +
+                    '\n（请严格根据这个现实时间判断：现在是清晨/上午/中午/下午/傍晚/晚上/深夜，并据此写台词与语气。）\n';
+            } catch (e) {
+                return '';
+            }
+        }
+        function getNowHHMM() {
+            try {
+                const now = new Date();
+                const pad2 = (n) => String(n).padStart(2, '0');
+                return pad2(now.getHours()) + ':' + pad2(now.getMinutes());
+            } catch (e) {
+                return '';
+            }
+        }
         function runProactiveCatchUpOnLoad() {
             openProactiveDB().then(db => {
                 const tx = db.transaction(PROACTIVE_STORE, 'readonly');
@@ -19527,16 +19814,23 @@ ${historyDesc}
                     const due = list.filter(item => item && item.proactiveReply && (now - (item.lastProactiveAt || 0)) >= ((item.proactiveReplyIntervalHours || 1) * 60 * 60 * 1000));
                     if (due.length === 0) return;
                     Promise.all(due.map(item => {
+                        const intervalHours = item.proactiveReplyIntervalHours || 1;
+                        const intervalMs = intervalHours * 60 * 60 * 1000;
+                        const elapsed = now - (item.lastProactiveAt || 0);
+                        const missedCount = Math.min(100, Math.max(1, Math.floor(elapsed / intervalMs)));
+                        if (missedCount < 1) return Promise.resolve(false);
                         const endpoint = ((item.api && item.api.endpoint) || '').trim().replace(/\/$/, '');
                         const url = endpoint.endsWith('/chat/completions') ? endpoint : endpoint + '/chat/completions';
+                        var timeCtx = getRealTimeContextText();
+                        var userContent = '【重要】你已经隔了 ' + (missedCount * intervalHours) + ' 小时没有和对方联系。请根据你的人设、与对方的聊天记录，模拟在这段时间内每隔 ' + intervalHours + ' 小时主动给对方发一条消息的节奏，共输出 ' + missedCount + ' 条消息。每条消息应体现对应时刻的语境（如早晨的问候、中午的关心、晚上的想念等，体现时间流逝的感知）。只输出一个 JSON 对象：{"reply":["第1条消息","第2条消息",...,"第' + missedCount + '条消息"]}。严禁输出心理独白、旁白等。\n\n' + timeCtx + '\n【聊天记录】\n' + (Array.isArray(item.historyLines) ? item.historyLines.join('\n') : '（暂无记录）') + (item.worldPresetBlock || '') + (item.playerProfileBlock || '');
                         return fetch(url, {
                             method: 'POST',
                             headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + (item.api && item.api.key ? item.api.key : '') },
                             body: JSON.stringify({
                                 model: (item.api && item.api.model) || 'gpt-3.5-turbo',
                                 messages: [
-                                    { role: 'system', content: '你是「' + (item.name || 'TA') + '」。你的设定如下：\n' + (item.charInfo || '') + '\n\n请以该角色身份，主动给玩家发一条消息。' },
-                                    { role: 'user', content: '【重要】你已经隔了 ' + (item.proactiveReplyIntervalHours || 1) + ' 小时没有和对方联系。请根据你的人设、与对方的聊天记录，主动发起一条自然的问候或关心。只输出一个 JSON 对象：{"reply":["你说的话"]}。\n\n【聊天记录】\n' + (Array.isArray(item.historyLines) ? item.historyLines.join('\n') : '（暂无记录）') + (item.worldPresetBlock || '') + (item.playerProfileBlock || '') }
+                                    { role: 'system', content: '你是「' + (item.name || 'TA') + '」。你的设定如下：\n' + (item.charInfo || '') + '\n\n请以该角色身份，主动给玩家发多条消息，每条体现不同时刻的语境。' },
+                                    { role: 'user', content: userContent }
                                 ],
                                 temperature: (item.api && typeof item.api.temperature === 'number') ? item.api.temperature : 0.85
                             })
@@ -19544,28 +19838,43 @@ ${historyDesc}
                             let content = (data.choices && data.choices[0] && data.choices[0].message && data.choices[0].message.content) ? data.choices[0].message.content.trim() : '';
                             if (!content) return false;
                             content = content.replace(/^```(?:json)?\s*/i, '').replace(/\s*```$/i, '').trim();
-                            let replyText = '';
-                            try { const p = JSON.parse(content); replyText = Array.isArray(p.reply) ? p.reply.join('') : (p.reply || content); } catch (e) { replyText = content; }
-                            if (!replyText) return false;
+                            var replyList = [];
+                            try {
+                                var p = JSON.parse(content);
+                                if (Array.isArray(p.reply)) {
+                                    replyList = p.reply.map(function(x) { return (x || '').toString().trim(); }).filter(Boolean);
+                                } else if (typeof p.reply === 'string') {
+                                    replyList = [p.reply.toString().trim()];
+                                }
+                            } catch (e) {
+                                replyList = [content];
+                            }
+                            if (replyList.length === 0) return false;
                             gameState.chatLogs = gameState.chatLogs || {};
                             gameState.chatLogs[item.relationId] = gameState.chatLogs[item.relationId] || [];
-                            gameState.chatLogs[item.relationId].push({ from: 'other', text: replyText });
+                            var lastAt = item.lastProactiveAt || 0;
+                            for (var i = 0; i < replyList.length; i++) {
+                                var sentAt = Math.min(lastAt + (i + 1) * intervalMs, now);
+                                gameState.chatLogs[item.relationId].push({ from: 'other', text: replyList[i], sentAt: sentAt });
+                            }
                             item.lastProactiveAt = now;
-                            const rel = gameState.relations.find(x => x.id === item.relationId);
+                            var rel = gameState.relations.find(x => x.id === item.relationId);
                             if (rel) rel.lastProactiveAt = now;
                             item.gameState = JSON.parse(JSON.stringify(gameState));
                             item.historyLines = buildHistoryLinesForRelation(item.relationId);
                             var name = (function() { var r = gameState.relations.find(x => x.id === item.relationId); return r ? (typeof getRelationDisplayName === 'function' ? getRelationDisplayName(r) : null) || r.name || 'TA' : item.name || 'TA'; })();
-                            var body = replyText.slice(0, 100) + (replyText.length > 100 ? '...' : '');
+                            var lastMsg = replyList[replyList.length - 1];
+                            var hhmm = getNowHHMM();
+                            var baseBody = replyList.length > 1 ? (name + ' 发来了 ' + replyList.length + ' 条新消息') : (lastMsg.slice(0, 100) + (lastMsg.length > 100 ? '...' : ''));
+                            var body = (hhmm ? ('[' + hhmm + '] ') : '') + baseBody;
                             var r = gameState.relations.find(x => x.id === item.relationId);
                             if (typeof tryShowSpecialCarePopup === 'function' && r && r.starred && !r.muted) {
-                                try { tryShowSpecialCarePopup(item.relationId, { from: 'other', text: replyText }); } catch (e) {}
+                                try { tryShowSpecialCarePopup(item.relationId, { from: 'other', text: lastMsg }); } catch (e) {}
                             } else if (typeof showTipModal === 'function') {
                                 try { showTipModal(name + ' 发来新消息', body); } catch (e) {}
                             }
                             if ('Notification' in window && Notification.permission === 'granted') {
-                                const r = gameState.relations.find(x => x.id === item.relationId);
-                                const icon = (r && r.avatar) || undefined;
+                                var icon = (r && r.avatar) || undefined;
                                 if (navigator.serviceWorker && navigator.serviceWorker.ready) {
                                     navigator.serviceWorker.ready.then(function(reg) {
                                         reg.showNotification(name, { body: body, icon: icon, tag: 'proactive-' + item.relationId, data: { relationId: item.relationId, url: location.origin + location.pathname } });
@@ -19575,13 +19884,13 @@ ${historyDesc}
                                 }
                             }
                             return openProactiveDB().then(db2 => {
-                                const wtx = db2.transaction(PROACTIVE_STORE, 'readwrite');
+                                var wtx = db2.transaction(PROACTIVE_STORE, 'readwrite');
                                 wtx.objectStore(PROACTIVE_STORE).put(item);
-                                return new Promise((res, rej) => { wtx.oncomplete = () => res(true); wtx.onerror = () => rej(); });
+                                return new Promise(function(res, rej) { wtx.oncomplete = function() { res(true); }; wtx.onerror = function() { rej(); }; });
                             });
-                        }).catch(() => false);
-                    })).then(results => {
-                        if (results.some(x => x)) {
+                        }).catch(function() { return false; });
+                    })).then(function(results) {
+                        if (results.some(function(x) { return x; })) {
                             saveGame();
                             syncProactiveToIndexedDB();
                             if (currentChatRelationId) renderChatMessages();
@@ -19589,7 +19898,7 @@ ${historyDesc}
                         }
                     });
                 };
-            }).catch(() => {});
+            }).catch(function() {});
         }
 
         var chatSearchActiveTab = 'text';
@@ -19829,6 +20138,109 @@ ${historyDesc}
         function closeChatBgPanel() {
             document.getElementById('chatBgPanel').classList.remove('show');
         }
+
+        function getAvatarStyleCss(style, customCss, scopeSelector, isPreview) {
+            const sel = scopeSelector || '__SCOPE__';
+            const avatarSel = isPreview ? sel : (sel + ' .chat-msg-avatar');
+            const imgSel = isPreview ? (sel + ' img') : (sel + ' .chat-msg-avatar img');
+            if (style === 'square') {
+                return avatarSel + ', ' + imgSel + ' { border-radius: 0 !important; }';
+            }
+            if (style === 'circle') {
+                return avatarSel + ', ' + imgSel + ' { border-radius: 50% !important; }';
+            }
+            if (style === 'custom' && customCss && customCss.trim()) {
+                return avatarSel + ' { ' + customCss.trim() + ' }\n' + imgSel + ' { border-radius: inherit; }';
+            }
+            return avatarSel + ', ' + imgSel + ' { border-radius: 50% !important; }';
+        }
+        function applyChatAvatarStyleForRelation(r) {
+            const styleTagId = 'chatAvatarStyleOverride';
+            let el = document.getElementById(styleTagId);
+            if (!el) {
+                el = document.createElement('style');
+                el.id = styleTagId;
+                document.head.appendChild(el);
+            }
+            const relId = r && r.id ? r.id : '';
+            const style = (r && r.chatAvatarStyle) ? r.chatAvatarStyle : 'circle';
+            const customCss = (r && typeof r.chatAvatarStyleCss === 'string') ? r.chatAvatarStyleCss : '';
+            if (!relId) { el.textContent = ''; return; }
+            const scope = '#chatPanel[data-chat-rel="' + String(relId) + '"]';
+            el.textContent = '/* chat avatar style */\n' + getAvatarStyleCss(style, customCss, scope, false);
+        }
+        function applyChatAvatarStylePreview(style, customCss) {
+            const styleTagId = 'chatAvatarStylePreviewOverride';
+            let el = document.getElementById(styleTagId);
+            if (!el) {
+                el = document.createElement('style');
+                el.id = styleTagId;
+                document.head.appendChild(el);
+            }
+            const scope = '#chatAvatarStylePreviewWrap .chat-avatar-style-preview-avatar';
+            el.textContent = '/* avatar style preview */\n' + getAvatarStyleCss(style, customCss, scope, true);
+        }
+        function openChatAvatarStylePanel() {
+            if (!currentChatRelationId) return;
+            const r = gameState.relations.find(x => x.id === currentChatRelationId);
+            if (!r) return;
+            closeChatSettingsModal();
+            const panel = document.getElementById('chatAvatarStylePanel');
+            const style = (r.chatAvatarStyle || 'circle');
+            const customCss = (r.chatAvatarStyleCss || '').trim();
+            document.querySelectorAll('.chat-avatar-style-preset-btn').forEach(btn => {
+                btn.classList.toggle('active', (btn.dataset.preset || '') === style);
+            });
+            const customWrap = document.getElementById('chatAvatarStyleCustomWrap');
+            const cssInput = document.getElementById('chatAvatarStyleCssInput');
+            customWrap.style.display = style === 'custom' ? 'flex' : 'none';
+            cssInput.value = customCss;
+            const otherPreview = document.getElementById('chatAvatarStylePreviewOther');
+            const minePreview = document.getElementById('chatAvatarStylePreviewMine');
+            otherPreview.innerHTML = r.avatar ? '<img src="' + (r.avatar || '').replace(/"/g, '&quot;') + '" alt="">' : '<span>' + (r.name || 'Ta')[0] + '</span>';
+            const myAvatar = (gameState.profile && gameState.profile.avatar) || '';
+            minePreview.innerHTML = myAvatar ? '<img src="' + (myAvatar || '').replace(/"/g, '&quot;') + '" alt="">' : '<span>我</span>';
+            applyChatAvatarStylePreview(style, customCss);
+            panel.classList.add('show');
+        }
+        function closeChatAvatarStylePanel() {
+            document.getElementById('chatAvatarStylePanel').classList.remove('show');
+        }
+        function saveChatAvatarStyle() {
+            if (!currentChatRelationId) return;
+            const r = gameState.relations.find(x => x.id === currentChatRelationId);
+            if (!r) return;
+            const activeBtn = document.querySelector('.chat-avatar-style-preset-btn.active');
+            const style = (activeBtn && activeBtn.dataset.preset) || 'circle';
+            const customCss = (document.getElementById('chatAvatarStyleCssInput').value || '').trim();
+            r.chatAvatarStyle = style;
+            r.chatAvatarStyleCss = style === 'custom' ? customCss : '';
+            saveGame();
+            applyChatAvatarStyleForRelation(r);
+            if (typeof renderChatMessages === 'function') renderChatMessages();
+            closeChatAvatarStylePanel();
+            showTipModal('已应用', '头像样式已保存，聊天界面已更新。');
+        }
+        document.getElementById('chatAvatarStylePanelBackBtn').addEventListener('click', closeChatAvatarStylePanel);
+        document.getElementById('chatAvatarStylePanelSaveBtn').addEventListener('click', saveChatAvatarStyle);
+        document.querySelectorAll('.chat-avatar-style-preset-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const preset = this.dataset.preset || 'circle';
+                document.querySelectorAll('.chat-avatar-style-preset-btn').forEach(b => b.classList.remove('active'));
+                this.classList.add('active');
+                const customWrap = document.getElementById('chatAvatarStyleCustomWrap');
+                const cssInput = document.getElementById('chatAvatarStyleCssInput');
+                customWrap.style.display = preset === 'custom' ? 'flex' : 'none';
+                if (preset !== 'custom') cssInput.value = '';
+                applyChatAvatarStylePreview(preset, preset === 'custom' ? cssInput.value : '');
+            });
+        });
+        document.getElementById('chatAvatarStyleCssInput').addEventListener('input', function() {
+            const activeBtn = document.querySelector('.chat-avatar-style-preset-btn.active');
+            const style = (activeBtn && activeBtn.dataset.preset) || 'circle';
+            applyChatAvatarStylePreview(style, this.value);
+        });
+
         function refreshChatBgPreview() {
             if (!currentChatRelationId) return;
             const r = gameState.relations.find(x => x.id === currentChatRelationId);
@@ -21664,9 +22076,9 @@ ${historyDesc}
             if (!gameState.chatLogs[currentChatRelationId]) gameState.chatLogs[currentChatRelationId] = [];
             if (!gameState.stats) gameState.stats = { health: 100, happiness: 100, money: 0, intelligence: 10, eq: 10, charm: 50, appearance: 50, pressure: 0, ageSpecific: {} };
             gameState.stats.money = Math.max(0, (gameState.stats.money || 0) - num);
-            const transferMsg = { from: 'me', transfer: { amount: num, note, accepted: false } };
+            const transferMsg = { from: 'me', transfer: { amount: num, note, accepted: false }, sentAt: Date.now() };
             gameState.chatLogs[currentChatRelationId].push(transferMsg);
-            renderChatMessages();
+            renderChatMessages(true);
             closeTransferModal();
             saveGame();
             renderStats();
@@ -21687,8 +22099,8 @@ ${historyDesc}
             if (!gameState.chatLogs[currentChatRelationId]) gameState.chatLogs[currentChatRelationId] = [];
             if (!gameState.stats) gameState.stats = { health: 100, happiness: 100, money: 0, intelligence: 10, eq: 10, charm: 50, appearance: 50, pressure: 0, ageSpecific: {} };
             gameState.stats.money = Math.max(0, (gameState.stats.money || 0) - num);
-            gameState.chatLogs[currentChatRelationId].push({ from: 'me', redpack: { amount: num, blessing, opened: false } });
-            renderChatMessages();
+            gameState.chatLogs[currentChatRelationId].push({ from: 'me', redpack: { amount: num, blessing, opened: false }, sentAt: Date.now() });
+            renderChatMessages(true);
             closeRedpackModal();
             saveGame();
             renderStats();
@@ -21745,7 +22157,7 @@ ${historyDesc}
                 sw.classList.remove('on');
             }
             if (enabling) {
-                showConfirmModal('确认开启', '开启后台主动回复会按照几小时消耗一次 API，确定开吗？', function() {
+                showConfirmModal('确认开启', '开启后台主动回复会按照几小时消耗一次 API。开启后需保持网络顺畅（如使用代理需一直挂着梯子），否则到点可能无法正常推送到通知栏。\n\n点击开启后，请在当前页面等待「推送已注册」或「注册成功」弹窗出现；出现后即可挂着梯子等待主动回复。如出现失败，请检查网络、代理或 API 配置后重试。确定开吗？', function() {
                     applyToggle(true);
                 }, function() {
                     revertToggleUI();
@@ -21857,6 +22269,9 @@ ${historyDesc}
         document.getElementById('toastStyleRadius').addEventListener('input', saveToastStyle);
         document.getElementById('chatSettingsBgRow').addEventListener('click', () => {
             openChatBgPanel();
+        });
+        document.getElementById('chatSettingsAvatarStyleRow').addEventListener('click', () => {
+            openChatAvatarStylePanel();
         });
         document.getElementById('chatSettingsBubbleStyleRow').addEventListener('click', () => {
             openBubbleStylePanel();

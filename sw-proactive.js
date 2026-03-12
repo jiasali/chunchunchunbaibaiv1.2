@@ -39,6 +39,41 @@ async function getAllProactiveRelations() {
   });
 }
 
+function getRealTimeContextText() {
+  try {
+    const now = new Date();
+    const week = ['日', '一', '二', '三', '四', '五', '六'];
+    const pad2 = (n) => String(n).padStart(2, '0');
+    const tzMin = -now.getTimezoneOffset();
+    const sign = tzMin >= 0 ? '+' : '-';
+    const tzAbs = Math.abs(tzMin);
+    const tzH = pad2(Math.floor(tzAbs / 60));
+    const tzM = pad2(tzAbs % 60);
+    const y = now.getFullYear();
+    const mo = pad2(now.getMonth() + 1);
+    const d = pad2(now.getDate());
+    const hh = pad2(now.getHours());
+    const mm = pad2(now.getMinutes());
+    const ss = pad2(now.getSeconds());
+    const tz = 'UTC' + sign + tzH + ':' + tzM;
+    return '【当前现实时间】\n' +
+      (y + '-' + mo + '-' + d + ' 周' + week[now.getDay()] + ' ' + hh + ':' + mm + ':' + ss + '（' + tz + '）') +
+      '\n（请严格根据这个现实时间判断：现在是清晨/上午/中午/下午/傍晚/晚上/深夜，并据此写台词与语气。）\n';
+  } catch (e) {
+    return '';
+  }
+}
+
+function getNowHHMM() {
+  try {
+    const now = new Date();
+    const pad2 = (n) => String(n).padStart(2, '0');
+    return pad2(now.getHours()) + ':' + pad2(now.getMinutes());
+  } catch (e) {
+    return '';
+  }
+}
+
 async function callProactiveAPI(data) {
   const api = (data.api && data.api.endpoint) ? data.api : (data.userSettings && data.userSettings.api) ? data.userSettings.api : null;
   if (!api || !api.endpoint || !api.key) return null;
@@ -47,9 +82,10 @@ async function callProactiveAPI(data) {
   const historyLines = Array.isArray(data.historyLines) ? data.historyLines : [];
   const worldPresetBlock = data.worldPresetBlock || '';
   const intervalHours = data.proactiveReplyIntervalHours || 1;
+  const timeCtx = getRealTimeContextText();
   let endpoint = (api.endpoint || '').trim();
   if (!endpoint.endsWith('/chat/completions')) endpoint = endpoint.replace(/\/$/, '') + '/chat/completions';
-  const userContent = '【重要】你已经隔了 ' + intervalHours + ' 小时没有和对方联系。请根据你的人设、与对方的聊天记录，主动发起一条自然的问候或关心。可以提及时间过去了多久，表达想念或关心。只输出一个 JSON 对象：{"reply":["你说的话1","你说的话2"]}。严禁输出心理独白、旁白等。\n\n【聊天记录】\n' + (historyLines.length ? historyLines.join('\n') : '（暂无记录）') + (worldPresetBlock || '');
+  const userContent = '【重要】你已经隔了 ' + intervalHours + ' 小时没有和对方联系。请根据你的人设、与对方的聊天记录，主动发起一条自然的问候或关心。可以提及时间过去了多久，表达想念或关心。只输出一个 JSON 对象：{"reply":["你说的话1","你说的话2"]}。严禁输出心理独白、旁白等。\n\n' + timeCtx + '\n【聊天记录】\n' + (historyLines.length ? historyLines.join('\n') : '（暂无记录）') + (worldPresetBlock || '');
   const sysPrompt = '你是「' + name + '」。你的设定如下：\n' + charInfo + '\n\n请以该角色身份，主动给玩家发一条消息。';
   const res = await fetch(endpoint, {
     method: 'POST',
@@ -135,8 +171,11 @@ self.addEventListener('periodicsync', async (e) => {
         tx.oncomplete = resolve;
         tx.onerror = () => reject(tx.error);
       });
+      const hhmm = getNowHHMM();
+      const baseBody = replyText.slice(0, 100) + (replyText.length > 100 ? '...' : '');
+      const body = (hhmm ? ('[' + hhmm + '] ') : '') + baseBody;
       await self.registration.showNotification(name, {
-        body: replyText.slice(0, 100) + (replyText.length > 100 ? '...' : ''),
+        body: body,
         icon: avatar || undefined,
         tag: 'proactive-' + item.relationId,
         data: { relationId: item.relationId, url: self.location.origin + self.location.pathname }

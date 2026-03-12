@@ -14,4 +14,5 @@ binding = "PROACTIVE_KV"
 id = "027f17546fa7444284ae6cb57f8b81ba"
 
 [triggers]
-crons = ["*/15 * * * *"]
+# 每 1 分钟执行一次，支持最短间隔约 0.017 小时（1 分钟）；Cloudflare cron 最小粒度为分钟，无法实现 0.01 小时（36 秒）
+crons = ["* * * * *"]

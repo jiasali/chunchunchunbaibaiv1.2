@@ -32,6 +32,35 @@ function hash(str) {
   return Math.abs(h).toString(36);
 }
 
+function getRealTimeContextText() {
+  try {
+    const now = new Date();
+    const week = ['日', '一', '二', '三', '四', '五', '六'];
+    const pad2 = (n) => String(n).padStart(2, '0');
+    const y = now.getUTCFullYear();
+    const mo = pad2(now.getUTCMonth() + 1);
+    const d = pad2(now.getUTCDate());
+    const hh = pad2(now.getUTCHours());
+    const mm = pad2(now.getUTCMinutes());
+    const ss = pad2(now.getUTCSeconds());
+    return '【当前现实时间（UTC）】\n' +
+      (y + '-' + mo + '-' + d + ' 周' + week[now.getUTCDay()] + ' ' + hh + ':' + mm + ':' + ss + ' UTC') +
+      '\n（请严格根据这个现实时间判断：现在是清晨/上午/中午/下午/傍晚/晚上/深夜，并据此写台词与语气。）\n';
+  } catch (e) {
+    return '';
+  }
+}
+
+function getNowHHMM() {
+  try {
+    const now = new Date();
+    const pad2 = (n) => String(n).padStart(2, '0');
+    return pad2(now.getUTCHours()) + ':' + pad2(now.getUTCMinutes());
+  } catch (e) {
+    return '';
+  }
+}
+
 export default {
   async fetch(request, env, ctx) {
     if (request.method === 'OPTIONS') {
@@ -153,6 +182,8 @@ export default {
       try {
         let endpoint = (api.endpoint || '').trim().replace(/\/$/, '');
         if (!endpoint.endsWith('/chat/completions')) endpoint += '/chat/completions';
+        const timeCtx = getRealTimeContextText();
+        const userContent = '【重要】你已经隔了 ' + (item.proactiveReplyIntervalHours || 1) + ' 小时没有和对方联系。请根据你的人设、与对方的聊天记录，主动发起一条自然的问候或关心。只输出一个 JSON 对象：{"reply":["你说的话"]}。\n\n' + timeCtx + '\n【聊天记录】\n' + (Array.isArray(item.historyLines) ? item.historyLines.join('\n') : '（暂无记录）') + (item.worldPresetBlock || '') + (item.playerProfileBlock || '');
         const res = await fetch(endpoint, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + (api.key || '') },
@@ -160,7 +191,7 @@ export default {
             model: api.model || 'gpt-3.5-turbo',
             messages: [
               { role: 'system', content: '你是「' + (item.name || 'TA') + '」。你的设定如下：\n' + (item.charInfo || '') + '\n\n请以该角色身份，主动给玩家发一条消息。' },
-              { role: 'user', content: '【重要】你已经隔了 ' + (item.proactiveReplyIntervalHours || 1) + ' 小时没有和对方联系。请根据你的人设、与对方的聊天记录，主动发起一条自然的问候或关心。只输出一个 JSON 对象：{"reply":["你说的话"]}。\n\n【聊天记录】\n' + (Array.isArray(item.historyLines) ? item.historyLines.join('\n') : '（暂无记录）') + (item.worldPresetBlock || '') + (item.playerProfileBlock || '') },
+              { role: 'user', content: userContent },
             ],
             temperature: typeof api.temperature === 'number' ? api.temperature : 0.85,
           }),
@@ -181,9 +212,6 @@ export default {
       }
       if (!replyText) continue;
 
-      item.lastProactiveAt = now;
-      await env.PROACTIVE_KV.put(keyName, JSON.stringify(item), { expirationTtl: 60 * 60 * 24 * 30 });
-
       const parts = keyName.split(':');
       const subKey = parts.length >= 2 ? parts[1] : '';
       const subVal = await env.PROACTIVE_KV.get('sub:' + subKey);
@@ -197,10 +225,13 @@ export default {
       if (!sub.endpoint || !sub.keys || !sub.keys.p256dh || !sub.keys.auth) continue;
 
       const appUrl = (item.origin && item.origin.startsWith('http')) ? item.origin : (env.GAME_ORIGIN && env.GAME_ORIGIN !== '*' ? env.GAME_ORIGIN : 'https://example.github.io');
+      const hhmm = getNowHHMM();
+      const baseBody = replyText.slice(0, 100) + (replyText.length > 100 ? '...' : '');
+      const body = (hhmm ? ('[' + hhmm + '] ') : '') + baseBody;
       const payload = {
         data: {
           title: item.name || 'TA',
-          body: replyText.slice(0, 100) + (replyText.length > 100 ? '...' : ''),
+          body: body,
           icon: item.iconUrl || undefined,
           tag: 'proactive-' + item.relationId,
           data: { relationId: item.relationId, url: appUrl },
@@ -208,6 +239,7 @@ export default {
         options: { ttl: 60 },
       };
 
+      let pushOk = false;
       try {
         const { headers, method, body } = await buildPushPayload(payload, sub, vapid);
         const pushRes = await fetch(sub.endpoint, {
@@ -215,14 +247,18 @@ export default {
           headers,
           body,
         });
-        if (pushRes.status >= 400) {
-          if (pushRes.status === 410 || pushRes.status === 404) {
-            await env.PROACTIVE_KV.delete(keyName);
-          }
+        if (pushRes.ok) {
+          pushOk = true;
+        } else if (pushRes.status === 410 || pushRes.status === 404) {
+          await env.PROACTIVE_KV.delete(keyName);
         }
       } catch (e) {
         console.error('Push failed:', e);
       }
+      if (!pushOk) continue;
+
+      item.lastProactiveAt = now;
+      await env.PROACTIVE_KV.put(keyName, JSON.stringify(item), { expirationTtl: 60 * 60 * 24 * 30 });
     }
   },
 };
