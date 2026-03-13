@@ -85,7 +85,7 @@ async function callProactiveAPI(data) {
   const timeCtx = getRealTimeContextText();
   let endpoint = (api.endpoint || '').trim();
   if (!endpoint.endsWith('/chat/completions')) endpoint = endpoint.replace(/\/$/, '') + '/chat/completions';
-  const userContent = '【重要】你已经隔了 ' + intervalHours + ' 小时没有和对方联系。请根据你的人设、与对方的聊天记录，主动发起一条自然的问候或关心。可以提及时间过去了多久，表达想念或关心。只输出一个 JSON 对象：{"reply":["你说的话1","你说的话2"]}。严禁输出心理独白、旁白等。\n\n' + timeCtx + '\n【聊天记录】\n' + (historyLines.length ? historyLines.join('\n') : '（暂无记录）') + (worldPresetBlock || '');
+  const userContent = '【重要】你已经隔了 ' + intervalHours + ' 小时没有和对方联系。请根据你的人设、与对方的聊天记录，主动发起一条自然的问候或关心。可以表达想念或关心，但不要刻意说「现在几点了」「都X点了」等具体时间。只输出一个 JSON 对象：{"reply":["你说的话1","你说的话2"]}。严禁输出心理独白、旁白等。\n\n' + timeCtx + '\n【聊天记录】\n' + (historyLines.length ? historyLines.join('\n') : '（暂无记录）') + (worldPresetBlock || '');
   const sysPrompt = '你是「' + name + '」。你的设定如下：\n' + charInfo + '\n\n请以该角色身份，主动给玩家发一条消息。';
   const res = await fetch(endpoint, {
     method: 'POST',

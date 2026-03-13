@@ -183,7 +183,7 @@ export default {
         let endpoint = (api.endpoint || '').trim().replace(/\/$/, '');
         if (!endpoint.endsWith('/chat/completions')) endpoint += '/chat/completions';
         const timeCtx = getRealTimeContextText();
-        const userContent = '【重要】你已经隔了 ' + (item.proactiveReplyIntervalHours || 1) + ' 小时没有和对方联系。请根据你的人设、与对方的聊天记录，主动发起一条自然的问候或关心。只输出一个 JSON 对象：{"reply":["你说的话"]}。\n\n' + timeCtx + '\n【聊天记录】\n' + (Array.isArray(item.historyLines) ? item.historyLines.join('\n') : '（暂无记录）') + (item.worldPresetBlock || '') + (item.playerProfileBlock || '');
+        const userContent = '【重要】你已经隔了 ' + (item.proactiveReplyIntervalHours || 1) + ' 小时没有和对方联系。请根据你的人设、与对方的聊天记录，主动发起一条自然的问候或关心。可以表达想念或关心，但不要刻意说「现在几点了」「都X点了」等具体时间。只输出一个 JSON 对象：{"reply":["你说的话"]}。\n\n' + timeCtx + '\n【聊天记录】\n' + (Array.isArray(item.historyLines) ? item.historyLines.join('\n') : '（暂无记录）') + (item.worldPresetBlock || '') + (item.playerProfileBlock || '');
         const res = await fetch(endpoint, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + (api.key || '') },

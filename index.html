@@ -7106,7 +7106,7 @@
                     <div class="api-field">
                         <label>API Key</label>
                         <div class="api-key-wrap">
-                            <input type="password" class="api-input" id="apiKey" placeholder="sk-..." autocomplete="off" autocorrect="off" autocapitalize="off" inputmode="text">
+                            <input type="text" class="api-input" id="apiKey" placeholder="sk-..." autocomplete="off" autocorrect="off" autocapitalize="off" inputmode="text">
                             <button type="button" class="api-key-eye-btn" id="apiKeyEyeBtn" aria-label="显示/隐藏 Key" title="点击显示完整 Key">
                                 <svg class="api-key-eye-icon api-key-eye-on" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" width="18" height="18"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><circle cx="12" cy="12" r="3" fill="none" stroke="currentColor" stroke-width="2"/></svg>
                                 <svg class="api-key-eye-icon api-key-eye-off" style="display:none" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" width="18" height="18"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><line x1="1" y1="1" x2="23" y2="23" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
@@ -8307,7 +8307,7 @@
                         <span class="chat-switch-thumb" id="chatSettingsOfflineModeThumb"></span>
                     </label>
                 </div>
-                <div style="font-size:12px;color:var(--text-muted);margin-top:4px;">开启后，点击爱心回复时会同时生成上帝视角描述（不少于500字），以独立灰色气泡显示在聊天中</div>
+                <div style="font-size:12px;color:var(--text-muted);margin-top:4px;">开启后，点击爱心回复时，场景视为「线下见面」：你和角色在现实中碰面、面对面说话。除角色回复外，会额外生成一段上帝视角描述（不少于500字），以灰色气泡显示，描写见面时的情境与氛围。</div>
             </div>
             <div class="profile-field" style="margin-bottom:6px;">
                 <div id="chatSettingsProactiveRow" style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid rgba(0,0,0,0.03);cursor:pointer;">
@@ -8598,7 +8598,7 @@
                         <span class="chat-switch-thumb" id="proactiveEnableThumb"></span>
                     </label>
                 </div>
-                <div class="proactive-hint">开启后，退出游戏后角色会按间隔主动发消息，并推送系统通知（头像、名字、消息内容）。间隔可填 0.01～168 小时（如 0.1=6分钟）。玩家只需授权通知权限即可，无需注册。安卓直接生效；iOS 需将本页「添加到主屏幕」后，由游戏作者配置推送服务器（见 push-backend 目录）方可实现后台推送。</div>
+                <div class="proactive-hint">【小白说明】关掉游戏后，角色会按你设的间隔（如 1 小时）主动发消息到通知栏。填好间隔、打开开关、允许通知即可。安卓和 iOS 都支持，国内一般不用梯子。</div>
             </div>
         </div>
     </div>
@@ -9859,7 +9859,7 @@
             var sysPrompt = '你是人生总结撰写助手。根据用户提供的全部人生素材（人生日志、剧情、与所有人的聊天、角色人生日记、朋友圈等），撰写一篇约' + wordCount + '字的整体人生总结。要求：' + perspectiveDesc + '；连贯成篇、有叙事节奏；不要罗列流水账，要有概括与升华。只输出正文，不要标题、不要小标题。';
             var userContent = '请根据以下全部人生素材，以' + perspectiveDesc + '撰写约' + wordCount + '字的人生总结。\n\n' + payload;
             var endpoint = (userSettings.api && userSettings.api.endpoint) ? (userSettings.api.endpoint.trim().replace(/\/$/, '') + (userSettings.api.endpoint.trim().endsWith('/chat/completions') ? '' : '/chat/completions')) : '';
-            if (!endpoint || !(userSettings.api && userSettings.api.key)) return Promise.reject(new Error('请先在设置中配置 API'));
+            if (!endpoint || !(userSettings.api && userSettings.api.key)) return Promise.reject(new Error('请先在「设置 → API 配置」中填写接口地址和 Key。未配置 API 无法使用 AI 功能。'));
             return fetch(endpoint, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + (userSettings.api.key || '') },
@@ -9872,11 +9872,11 @@
                     temperature: 0.7
                 })
             }).then(function(res) {
-                if (!res.ok) return res.text().then(function(t) { throw new Error(t || 'API ' + res.status); });
+                if (!res.ok) return res.text().then(function(t) { var b=t; try{b=t?JSON.parse(t):t;}catch(_){} throw new Error(formatApiError(res.status,b,'人生总结')); });
                 return res.json();
             }).then(function(data) {
                 var content = (data.choices && data.choices[0] && data.choices[0].message && data.choices[0].message.content) ? data.choices[0].message.content.trim() : '';
-                if (!content) throw new Error('未返回内容');
+                if (!content) throw new Error('AI 返回了空内容。可能原因：模型输出被截断、prompt 过长超时、或 API 异常。建议：缩短人生素材、检查 API 用量和网络后重试。');
                 return content;
             });
         }
@@ -10130,11 +10130,11 @@
                     temperature: (userSettings.api && typeof userSettings.api.temperature === 'number' && !isNaN(userSettings.api.temperature)) ? userSettings.api.temperature : 0.7
                 })
             }).then(function(res) {
-                if (!res.ok) return res.text().then(function(t) { throw new Error(t || 'API ' + res.status); });
+                if (!res.ok) return res.text().then(function(t) { var b=t; try{b=t?JSON.parse(t):t;}catch(_){} throw new Error(formatApiError(res.status,b,'本月剧情生成')); });
                 return res.json();
             }).then(function(data) {
                 var content = (data.choices && data.choices[0] && data.choices[0].message && data.choices[0].message.content) ? data.choices[0].message.content.trim() : '';
-                if (!content) throw new Error('未返回内容');
+                if (!content) throw new Error('AI 返回了空内容。可能原因：模型输出被截断、prompt 过长超时、或 API 异常。建议：缩短剧情素材、检查 API 用量和网络后重试。');
                 try {
                     var cleaned = content.replace(/^```(?:json)?\s*/i, '').replace(/\s*```$/i, '').trim();
                     var obj = JSON.parse(cleaned);
@@ -11072,7 +11072,7 @@
                     }),
                     signal: videoCallInCallAbortController.signal
                 });
-                if (!res.ok) throw new Error('API ' + res.status);
+                if (!res.ok) { const et=await res.text(); var eb=et; try{eb=et?JSON.parse(et):et;}catch(_){} throw new Error(formatApiError(res.status,eb,'视频通话回复')); }
                 const data = await res.json();
                 let raw = (data.choices && data.choices[0] && data.choices[0].message && data.choices[0].message.content) ? data.choices[0].message.content.trim() : '';
                 if (!raw) return;
@@ -11234,13 +11234,13 @@
                     }),
                     signal: voiceCallScenarioAbortController.signal
                 });
-                if (!res.ok) throw new Error('API ' + res.status);
+                if (!res.ok) { const et=await res.text(); var eb=et; try{eb=et?JSON.parse(et):et;}catch(_){} throw new Error(formatApiError(res.status,eb,'语音通话场景')); }
                 const data = await res.json();
                 let raw = (data.choices && data.choices[0] && data.choices[0].message && data.choices[0].message.content) ? data.choices[0].message.content.trim() : '';
-                if (!raw) throw new Error('未返回内容');
+                if (!raw) throw new Error('AI 返回了空内容。可能原因：模型输出被截断、prompt 过长超时、或 API 异常。建议：检查 API 用量和网络后重试。');
                 raw = raw.replace(/^```(?:json)?\s*/i, '').replace(/\s*```$/i, '').trim();
                 let parsed = null;
-                try { parsed = JSON.parse(raw); } catch (e) { throw new Error('返回格式不是 JSON：' + raw.slice(0, 80)); }
+                try { parsed = JSON.parse(raw); } catch (e) { throw new Error('AI 返回格式不是有效 JSON。可能原因：模型输出被截断或格式错误。详情：' + raw.slice(0, 80) + '。建议：重试或检查 prompt 是否过长。'); }
                 const accepted = !!parsed.accepted;
                 let transcript = Array.isArray(parsed.transcript) ? parsed.transcript.map(function(x){return (x||'').toString().trim();}).filter(Boolean) : [];
                 let chatAfterCall = Array.isArray(parsed.chatAfterCall) ? parsed.chatAfterCall.map(function(x){return (x||'').toString().trim();}).filter(Boolean) : [];
@@ -11404,10 +11404,10 @@
                     }),
                     signal: videoCallScenarioAbortController.signal
                 });
-                if (!res.ok) throw new Error('API ' + res.status);
+                if (!res.ok) { const et=await res.text(); var eb=et; try{eb=et?JSON.parse(et):et;}catch(_){} throw new Error(formatApiError(res.status,eb,'视频通话场景')); }
                 const data = await res.json();
                 let raw = (data.choices && data.choices[0] && data.choices[0].message && data.choices[0].message.content) ? data.choices[0].message.content.trim() : '';
-                if (!raw) throw new Error('未返回内容');
+                if (!raw) throw new Error('AI 返回了空内容。可能原因：模型输出被截断、prompt 过长超时、或 API 异常。建议：检查 API 用量和网络后重试。');
                 raw = raw.replace(/^```(?:json)?\s*/i, '').replace(/\s*```$/i, '').trim();
                 let parsed = null;
                 try { parsed = JSON.parse(raw); } catch (e) { parsed = { accepted: true }; }
@@ -11967,10 +11967,10 @@
                             temperature: (typeof userSettings.api.temperature === 'number' && !isNaN(userSettings.api.temperature)) ? userSettings.api.temperature : 0.85
                         })
                     });
-                    if (!res.ok) throw new Error('API 返回 ' + res.status);
+                    if (!res.ok) { const et=await res.text(); var eb=et; try{eb=et?JSON.parse(et):et;}catch(_){} throw new Error(formatApiError(res.status,eb,'地图相遇剧情')); }
                     const data = await res.json();
                     let content = (data.choices && data.choices[0] && data.choices[0].message && data.choices[0].message.content) ? data.choices[0].message.content.trim() : '';
-                    if (!content) throw new Error('未返回内容');
+                    if (!content) throw new Error('AI 返回了空内容。可能原因：模型输出被截断、prompt 过长超时、或 API 异常。建议：检查 API 用量和网络后重试。');
                     content = content.replace(/^```(?:json)?\s*/i, '').replace(/\s*```$/i, '').trim();
                     let parsed = null;
                     try { parsed = JSON.parse(content); } catch (_) {}
@@ -12507,7 +12507,7 @@
                                 max_tokens: 4096
                             })
                         });
-                        if (!res.ok) throw new Error('API 返回 ' + res.status);
+                        if (!res.ok) { const et=await res.text(); var eb=et; try{eb=et?JSON.parse(et):et;}catch(_){} throw new Error(formatApiError(res.status,eb,'世界观生成')); }
                         const data = await res.json();
                         const raw = (data.choices && data.choices[0] && data.choices[0].message && data.choices[0].message.content) ? data.choices[0].message.content.trim() : '';
                         let worldName = '';
@@ -12580,7 +12580,7 @@
                                 max_tokens: 4096
                             })
                         });
-                        if (!res.ok) throw new Error('API 返回 ' + res.status);
+                        if (!res.ok) { const et=await res.text(); var eb=et; try{eb=et?JSON.parse(et):et;}catch(_){} throw new Error(formatApiError(res.status,eb,'正则设定生成')); }
                         const data = await res.json();
                         const raw = (data.choices && data.choices[0] && data.choices[0].message && data.choices[0].message.content) ? data.choices[0].message.content.trim() : '';
                         let worldName = '';
@@ -14805,14 +14805,15 @@
                 });
                 if (!res.ok) {
                     const errorText = await res.text();
-                    throw new Error(`API返回错误 ${res.status}: ${errorText.slice(0, 100)}`);
+                    var eb = errorText; try { eb = errorText ? JSON.parse(errorText) : errorText; } catch(_) {}
+                    throw new Error(formatApiError(res.status, eb, '礼物搜索'));
                 }
                 const data = await res.json();
                 let content = (data.choices && data.choices[0] && data.choices[0].message && data.choices[0].message.content) ? data.choices[0].message.content.trim() : '';
-                if (!content) throw new Error('未返回内容');
+                if (!content) throw new Error('AI 返回了空内容。可能原因：模型输出被截断、prompt 过长超时、或 API 异常。建议：缩短搜索关键词、检查 API 用量和网络后重试。');
                 content = content.replace(/^```(?:json)?\s*/i, '').replace(/\s*```$/i, '').trim();
                 let arr = parseGiftListFromApiContent(content);
-                if (!arr.length) throw new Error('API 未返回有效礼物列表（需要 12～15 个礼物的 JSON 数组）');
+                if (!arr.length) throw new Error('AI 未返回有效礼物列表。可能原因：模型未按 JSON 数组格式输出、或输出被截断。需要 12～15 个礼物的 JSON 数组。建议：重试或更换搜索关键词。');
                 for (const g of arr) {
                     if (g.imageUrl || g.img || g.image) continue;
                     const searchWord = (g.imageKeyword || g.image_keyword || '').toString().trim() || (g.name || g.title || '').toString().trim();
@@ -15473,6 +15474,35 @@
             div.textContent = s;
             return div.innerHTML;
         }
+        /** API 错误信息具体化，说明原因并给出解决建议 */
+        function formatApiError(status, body, context) {
+            const ctx = context || 'API';
+            let cause = '', suggest = '';
+            if (status === 401) {
+                cause = 'API Key 无效、过期或未填写';
+                suggest = '请到「设置 → API 配置」检查 Key 是否正确，是否有多余空格，或联系 API 提供方确认 Key 是否有效。';
+            } else if (status === 403) {
+                cause = 'API 拒绝访问（权限不足）';
+                suggest = '请确认该 Key 是否有权限调用此接口，或是否超出用量/余额限制。';
+            } else if (status === 404) {
+                cause = '接口地址不存在';
+                suggest = '请检查「设置 → API 配置」中的接口地址是否正确，是否少了 /v1 或 /chat/completions 等路径。';
+            } else if (status === 429) {
+                cause = '请求过于频繁或超出配额';
+                suggest = '请稍后再试，或检查 API 用量、余额是否已用完。';
+            } else if (status >= 500) {
+                cause = 'API 服务器内部错误';
+                suggest = '请稍后重试。若持续失败，可能是 API 服务方故障，可联系其客服。';
+            } else if (status === 0 || !status) {
+                cause = '网络连接失败';
+                suggest = '请检查网络是否正常，若使用代理请确认代理可用。国内用户若无法访问国外 API，可尝试使用国内中转服务。';
+            } else {
+                cause = '请求失败（HTTP ' + status + '）';
+                suggest = '请检查网络、API 地址和 Key 是否正确。';
+            }
+            const bodyPreview = (typeof body === 'string' ? body : (body && body.error && body.error.message ? body.error.message : JSON.stringify(body || ''))).slice(0, 120);
+            return ctx + ' 调用失败：' + cause + '。' + (bodyPreview ? ' 详情：' + bodyPreview : '') + ' 【解决方法】' + suggest;
+        }
         /** 根据文件名扩展名返回对应类型的图标 URL（Iconify CDN），用于文件卡片展示 */
         function getFileTypeIconUrl(fileName) {
             if (!fileName || typeof fileName !== 'string') return '';
@@ -15824,11 +15854,13 @@
                 });
                 if (!res.ok) {
                     const errText = await res.text();
-                    throw new Error('API ' + res.status + (errText ? ': ' + errText.slice(0, 80) : ''));
+                    let errBody = errText;
+                    try { errBody = JSON.parse(errText); } catch (_) {}
+                    throw new Error(formatApiError(res.status, errBody, '聊天'));
                 }
                 const data = await res.json();
                 let content = (data.choices && data.choices[0] && data.choices[0].message && data.choices[0].message.content) ? data.choices[0].message.content.trim() : '';
-                if (!content) throw new Error('未返回内容');
+                if (!content) throw new Error('AI 返回了空内容。可能原因：模型输出被截断、prompt 过长超时、或 API 异常。建议：缩短对话内容、检查 API 用量和网络后重试。');
                 content = content.replace(/^```(?:json)?\s*/i, '').replace(/\s*```$/i, '').trim();
                 var replyText = '';
                 var fileContent = '';
@@ -15873,7 +15905,7 @@
                         replyText = content;
                     }
                 }
-                if (!replyText && !fileContent) throw new Error('未返回有效对话内容');
+                if (!replyText && !fileContent) throw new Error('AI 未返回有效对话内容。可能原因：模型输出格式不符合预期、被截断、或未包含 reply 字段。建议：重试或缩短对话历史后再次点击爱心。');
                 if (!relationIdForReply || !gameState.chatLogs[relationIdForReply]) return;
                 var heartAnimDelay = 320;
                 function heartDelay(ms) { return new Promise(function(r) { setTimeout(r, ms || heartAnimDelay); }); }
@@ -16968,7 +17000,7 @@
                 headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + cfg.key },
                 body: JSON.stringify(body)
             });
-            if (!res.ok) throw new Error('API ' + res.status);
+            if (!res.ok) { const et=await res.text(); var eb=et; try{eb=et?JSON.parse(et):et;}catch(_){} throw new Error(formatApiError(res.status,eb,'通用对话')); }
             const data = await res.json();
             if (isGemini) {
                 const parts = (data.candidates && data.candidates[0] && data.candidates[0].content && data.candidates[0].content.parts) ? data.candidates[0].content.parts : [];
@@ -17010,7 +17042,7 @@
                 headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + (mia.key || '') },
                 body: JSON.stringify({ model: (mia.model || 'dall-e-2'), prompt: prompt, n: 1, size: '512x512' })
             });
-            if (!res.ok) throw new Error('文生图 API ' + res.status);
+            if (!res.ok) { const et=await res.text(); var eb=et; try{eb=et?JSON.parse(et):et;}catch(_){} throw new Error(formatApiError(res.status,eb,'文生图')); }
             const data = await res.json();
             function extractImg(d) {
                 if (!d) return null;
@@ -17144,7 +17176,7 @@
                         ? (gameState.profile && gameState.profile.nickname) || '我'
                         : ((gameState.relations.find(r => r.id === p.authorId) || {}).name || '好友');
                     const hasImage = !!(p.imageSrc || (Array.isArray(p.imageList) && p.imageList.length));
-                    const timeStr = p.time ? (typeof p.time === 'number' ? new Date(p.time).toLocaleString('zh-CN') : p.time) : '';
+                    const timeStr = (p.gameTime && typeof p.gameTime.year === 'number' && typeof p.gameTime.month === 'number') ? (p.gameTime.year + '年' + p.gameTime.month + '月' + (p.gameTime.day ? p.gameTime.day + '日' : '')) : (p.time ? (typeof p.time === 'number' ? new Date(p.time).toLocaleString('zh-CN') : p.time) : '');
                     const textPreview = (p.text || '').toString().slice(0, 80);
                     const comments = Array.isArray(p.comments) ? p.comments : [];
                     const commentLines = comments.length ? comments.map((c, cIdx) => {
@@ -17168,9 +17200,9 @@
 重要：每个成员的点赞、评论、转发必须严格根据其人设、性格、与玩家的关系及聊天记录来决定，谁对哪条动态点赞/评论/转发需符合角色逻辑，不要为了热闹而乱刷存在感。
 
 要求：
-1. posts：数组，长度等于成员数，顺序与成员顺序一致。每项格式：{"text":"动态正文", "needImage": true/false, "imagePrompt":"英文文生图提示词（仅当needImage为true时必填）"}。needImage由人设决定，非所有人必须配图。${userSettings.momentsAutoTextToImage ? ' 当前已开启文生图配图，请为每条动态均填写 needImage: true 与 imagePrompt（英文文生图提示词，用于配图）。' : ''}
-2. interactions：数组，长度等于成员数。每项格式：{"actions":[{"postIndex":0, "action":"like"|"comment"|"forward", "commentText":"评论内容（仅当action为comment时必填）"}]}。postIndex 为 posts 数组下标（0起始）。每个成员可多项或空数组，必须符合其人设。
-3. historyInteractions：数组，长度等于成员数，对历史动态的互动。每项格式：{"actions":[{"postId":"historyId","action":"like"|"comment"|"forward"|"replyComment", "commentIndex":0, "commentText":"评论内容（仅当action为comment或replyComment时必填）"}]}。postId 必须来自下方提供的历史动态列表中的 id；当 action 为 "replyComment" 时，commentIndex 必须对应该动态顶层评论列表中的 [评论X] 的 X，用于进行楼中楼回复（可以优先回复玩家的评论）；同一角色对同一动态顶层评论不必重复多条，更多观点可用 replyComment 形式补充。
+1. posts：数组，长度等于成员数，顺序与成员顺序一致。每项格式：{"text":"动态正文", "needImage": true/false, "imagePrompt":"英文文生图提示词（仅当needImage为true时必填）"}。needImage由人设决定，非所有人必须配图。动态正文严禁使用 emoji 符号（如 😊🎉等）。${userSettings.momentsAutoTextToImage ? ' 当前已开启文生图配图，请为每条动态均填写 needImage: true 与 imagePrompt（英文文生图提示词，用于配图）。' : ''}
+2. interactions：数组，长度等于成员数。每项格式：{"actions":[{"postIndex":0, "action":"like"|"comment"|"forward", "commentText":"评论内容（仅当action为comment时必填）"}]}。postIndex 为 posts 数组下标（0起始）。每个成员可多项或空数组，必须符合其人设。评论内容严禁使用 emoji 符号。
+3. historyInteractions：数组，长度等于成员数，对历史动态的互动。每项格式：{"actions":[{"postId":"historyId","action":"like"|"comment"|"forward"|"replyComment", "commentIndex":0, "commentText":"评论内容（仅当action为comment或replyComment时必填）"}]}。postId 必须来自下方提供的历史动态列表中的 id；当 action 为 "replyComment" 时，commentIndex 必须对应该动态顶层评论列表中的 [评论X] 的 X，用于进行楼中楼回复（可以优先回复玩家的评论）；同一角色对同一动态顶层评论不必重复多条，更多观点可用 replyComment 形式补充。评论内容严禁使用 emoji 符号。
 
 ${worldPresetBlock}
 当前朋友圈世界观：${worldPrompt}
@@ -17229,6 +17261,11 @@ ${historyDesc}
                         const keyword = (text || '').slice(0, 50).replace(/\s+/g, ' ');
                         try { imageSrc = await fetchGiftImageFromPexels(keyword) || null; } catch (pexelErr) { imageSrc = null; }
                     }
+                    const meta = gameState.meta || {};
+                    const gy = typeof meta.currentYear === 'number' ? meta.currentYear : 2024;
+                    const gm = typeof meta.currentMonth === 'number' ? meta.currentMonth : 1;
+                    const gd = typeof meta.currentDay === 'number' ? meta.currentDay : 1;
+                    text = (typeof stripEmoji === 'function' ? stripEmoji(text) : text) || text;
                     const postId = 'post_' + Date.now() + '_' + Math.random().toString(36).slice(2, 8);
                     const payload = {
                         id: postId,
@@ -17236,6 +17273,7 @@ ${historyDesc}
                         authorId: authorId,
                         text: text,
                         time: Date.now(),
+                        gameTime: { year: gy, month: gm, day: gd },
                         likes: [],
                         comments: []
                     };
@@ -17284,14 +17322,16 @@ ${historyDesc}
                         if (!post.likes) post.likes = [];
                         if (!post.likes.includes(authorId)) post.likes.push(authorId);
                     } else if (action === 'comment') {
-                        const text = (item.commentText || '').trim();
+                        let text = (item.commentText || '').trim();
+                        text = (typeof stripEmoji === 'function' ? stripEmoji(text) : text) || text;
                         if (!text) return;
                         if (!post.comments) post.comments = [];
                         const hasTop = post.comments.some(c => c && c.relationId === authorId);
                         if (hasTop) return;
                         post.comments.push({ relationId: authorId, text: text });
                     } else if (action === 'replyComment') {
-                        const text = (item.commentText || '').trim();
+                        let text = (item.commentText || '').trim();
+                        text = (typeof stripEmoji === 'function' ? stripEmoji(text) : text) || text;
                         const idx = Number(item.commentIndex);
                         if (!text || isNaN(idx) || idx < 0) return;
                         if (!Array.isArray(post.comments)) return;
@@ -17300,6 +17340,10 @@ ${historyDesc}
                         if (!Array.isArray(parent.replies)) parent.replies = [];
                         parent.replies.push({ relationId: authorId, text: text });
                     } else if (action === 'forward') {
+                        const fwdMeta = gameState.meta || {};
+                        const fwdGy = typeof fwdMeta.currentYear === 'number' ? fwdMeta.currentYear : 2024;
+                        const fwdGm = typeof fwdMeta.currentMonth === 'number' ? fwdMeta.currentMonth : 1;
+                        const fwdGd = typeof fwdMeta.currentDay === 'number' ? fwdMeta.currentDay : 1;
                         const fwdId = 'post_' + Date.now() + '_fwd_' + Math.random().toString(36).slice(2, 8);
                         const fwdPayload = {
                             id: fwdId,
@@ -17307,6 +17351,7 @@ ${historyDesc}
                             authorId: authorId,
                             text: '[转发] ' + (post.text || ''),
                             time: Date.now(),
+                            gameTime: { year: fwdGy, month: fwdGm, day: fwdGd },
                             likes: [],
                             comments: [],
                             forwardFromPostId: post.id
@@ -17397,7 +17442,7 @@ ${historyDesc}
             feed.innerHTML = posts.map(p => {
                 const authorName = getAuthorName(p.authorId);
                 const avatar = getAuthorAvatar(p.authorId);
-                const timeStr = p.time ? (typeof p.time === 'number' ? new Date(p.time).toLocaleString('zh-CN') : p.time) : '';
+                const timeStr = (p.gameTime && typeof p.gameTime.year === 'number' && typeof p.gameTime.month === 'number') ? (p.gameTime.year + '年' + p.gameTime.month + '月' + (p.gameTime.day ? p.gameTime.day + '日' : '')) : (p.time ? (typeof p.time === 'number' ? new Date(p.time).toLocaleString('zh-CN') : p.time) : '');
                 const liked = (p.likes || []).includes('me');
                 const likesCount = (p.likes || []).length;
                 const comments = (p.comments || []);
@@ -17823,7 +17868,7 @@ ${historyDesc}
                 };
                 listEl.innerHTML = posts.map(p => {
                     const circleName = getCircleName(p.circleId);
-                    const timeStr = p.time ? (typeof p.time === 'number' ? new Date(p.time).toLocaleString('zh-CN') : p.time) : '';
+                    const timeStr = (p.gameTime && typeof p.gameTime.year === 'number' && typeof p.gameTime.month === 'number') ? (p.gameTime.year + '年' + p.gameTime.month + '月' + (p.gameTime.day ? p.gameTime.day + '日' : '')) : (p.time ? (typeof p.time === 'number' ? new Date(p.time).toLocaleString('zh-CN') : p.time) : '');
                     const likesCount = (p.likes || []).length;
                     const comments = (p.comments || []);
                     let imgHtml = '';
@@ -17992,15 +18037,24 @@ ${historyDesc}
                 reader.readAsDataURL(file);
             });
         }
+        function stripEmoji(s) {
+            if (typeof s !== 'string') return s;
+            return s.replace(/[\u{1F300}-\u{1F9FF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}\u{1F600}-\u{1F64F}\u{1F680}-\u{1F6FF}\u{1F1E0}-\u{1F1FF}\u{FE00}-\u{FE0F}\u{1F900}-\u{1F9FF}]/gu, '').trim();
+        }
         function sendMomentsCompose() {
             const txtEl = document.getElementById('momentsComposeText');
-            const text = (txtEl && txtEl.value ? txtEl.value : '').trim();
+            let text = (txtEl && txtEl.value ? txtEl.value : '').trim();
+            text = stripEmoji(text);
             if (!text && momentsComposeImages.length === 0) {
                 showTipModal('提示', '请输入内容或选择图片后再发送');
                 return;
             }
             const circle = getCurrentMomentsCircle();
             if (!circle) return;
+            const meta = gameState.meta || {};
+            const gy = typeof meta.currentYear === 'number' ? meta.currentYear : 2024;
+            const gm = typeof meta.currentMonth === 'number' ? meta.currentMonth : 1;
+            const gd = typeof meta.currentDay === 'number' ? meta.currentDay : 1;
             const newId = 'post_' + Date.now();
             const payload = {
                 id: newId,
@@ -18008,6 +18062,7 @@ ${historyDesc}
                 authorId: 'me',
                 text: text,
                 time: Date.now(),
+                gameTime: { year: gy, month: gm, day: gd },
                 likes: [],
                 comments: []
             };
@@ -18951,7 +19006,7 @@ ${historyDesc}
                         max_tokens: 1024
                     })
                 });
-                if (!res.ok) throw new Error('API 返回 ' + res.status);
+                if (!res.ok) { const et=await res.text(); var eb=et; try{eb=et?JSON.parse(et):et;}catch(_){} throw new Error(formatApiError(res.status,eb,'角色设定生成')); }
                 var data = await res.json();
                 var raw = (data.choices && data.choices[0] && data.choices[0].message && data.choices[0].message.content) ? data.choices[0].message.content.trim() : '';
                 var jsonStr = raw.replace(/^```(?:json)?\s*/i, '').replace(/\s*```\s*$/i, '').trim();
@@ -19680,7 +19735,7 @@ ${historyDesc}
             document.getElementById('proactiveReplySettingsPanel').classList.remove('show');
         }
         /* 推送服务器 URL：游戏作者部署 Cloudflare Worker 后填入，用于 iOS 后台推送。留空则仅安卓 periodicSync 生效 */
-        var PUSH_SERVER_URL = 'https://tabula-proactive-push.819914401.workers.dev';
+        var PUSH_SERVER_URL = 'https://push.xiaoyuncloud.cn';
         /* 国内备用地址：workers.dev 在国内可能打不开，可绑定自定义域名后填入，如 'https://push.你的域名.com'。留空则只用上面的地址 */
         var PUSH_SERVER_URL_CN = 'https://push.xiaoyuncloud.cn';
         const PROACTIVE_DB = 'tabula_proactive_db';
@@ -19864,7 +19919,7 @@ ${historyDesc}
                 var list = (gameState.relations || []).filter(function(r) { return r.proactiveReply; });
                 if (!list.length) return;
                 if (!userSettings.api || !userSettings.api.endpoint || !userSettings.api.key) {
-                    if (typeof showTipModal === 'function') showTipModal('请先配置 API', '后台主动回复需要先设置 API 密钥');
+                    if (typeof showTipModal === 'function') showTipModal('请先配置 API', '后台主动回复需要先在「设置 → API 配置」中填写接口地址和 Key。未配置则无法生成角色消息。');
                     return;
                 }
                 var worldPresetText = (typeof getCheckedWorldPresetContents === 'function') ? getCheckedWorldPresetContents() : '';
@@ -19894,7 +19949,7 @@ ${historyDesc}
                     body: JSON.stringify(payload)
                 }).then(function(o) {
                     var res = o.res;
-                    if (!res.ok) return res.text().then(function(t) { throw new Error(res.status + ': ' + (t || res.statusText)); });
+                    if (!res.ok) return res.text().then(function(t) { var b=t; try{b=t?JSON.parse(t):t;}catch(_){} throw new Error(formatApiError(res.status,b,'推送注册')); });
                     return res.json();
                 }).then(function() {
                     if (!silent && typeof showTipModal === 'function') showTipModal('推送已注册', '后台主动回复已开启，到时间后会在通知栏收到角色消息');
@@ -20187,7 +20242,7 @@ ${historyDesc}
                         temperature: (typeof userSettings.api.temperature === 'number' && !isNaN(userSettings.api.temperature)) ? userSettings.api.temperature : 0.85
                     })
                 });
-                if (!res.ok) throw new Error('API 返回 ' + res.status);
+                if (!res.ok) { const et=await res.text(); var eb=et; try{eb=et?JSON.parse(et):et;}catch(_){} throw new Error(formatApiError(res.status,eb,'聊天总结')); }
                 var data = await res.json();
                 var content = (data.choices && data.choices[0] && data.choices[0].message && data.choices[0].message.content) ? data.choices[0].message.content.trim() : '';
                 box.value = content || '未能生成总结内容。';
@@ -20925,7 +20980,7 @@ ${historyDesc}
             closeReincarnateApiConfirmModal();
             var worldText = typeof getCheckedWorldPresetContents === 'function' ? getCheckedWorldPresetContents() : '';
             if (!userSettings.api || !userSettings.api.endpoint || !userSettings.api.key) {
-                showTipModal('提示', '请先在设置中配置 API 地址与 Key');
+                showTipModal('提示', '请先在「设置 → API 配置」中填写接口地址和 Key。未配置则无法使用该功能。');
                 doReincarnate(reincarnatePendingMode);
                 return;
             }
@@ -20952,14 +21007,14 @@ ${historyDesc}
                     ]
                 })
             }).then(function(res) {
-                if (!res.ok) throw new Error('API ' + res.status);
+                if (!res.ok) return res.text().then(function(t) { var b=t; try{b=t?JSON.parse(t):t;}catch(_){} throw new Error(formatApiError(res.status,b,'转生生成')); });
                 return res.json();
             }).then(function(data) {
                 var content = (data.choices && data.choices[0] && data.choices[0].message && data.choices[0].message.content) ? data.choices[0].message.content.trim() : '';
-                if (!content) throw new Error('未返回内容');
+                if (!content) throw new Error('AI 返回了空内容。可能原因：模型输出被截断、prompt 过长超时、或 API 异常。建议：检查 API 用量和网络后重试。');
                 content = content.replace(/^```(?:json)?\s*/i, '').replace(/\s*```$/i, '').trim();
                 var payload = void 0;
-                try { payload = JSON.parse(content); } catch (e) { throw new Error('JSON 解析失败'); }
+                try { payload = JSON.parse(content); } catch (e) { throw new Error('AI 返回的 JSON 解析失败。可能原因：模型输出格式错误、被截断、或包含非法字符。建议：重试或检查世界观描述是否过长。'); }
                 doReincarnate(reincarnatePendingMode, payload);
             }).catch(function(e) {
                 hideReincarnateProgress();
@@ -22128,13 +22183,13 @@ ${historyDesc}
                         }),
                         signal: voiceCallDoodleAbortController.signal
                     });
-                    if (!res.ok) throw new Error('API ' + res.status);
+                    if (!res.ok) { const et=await res.text(); var eb=et; try{eb=et?JSON.parse(et):et;}catch(_){} throw new Error(formatApiError(res.status,eb,'语音通话回复')); }
                     const data = await res.json();
                     let content = (data.choices && data.choices[0] && data.choices[0].message && data.choices[0].message.content) ? data.choices[0].message.content.trim() : '';
-                    if (!content) throw new Error('未返回内容');
+                    if (!content) throw new Error('AI 返回了空内容。可能原因：模型输出被截断、prompt 过长超时、或 API 异常。建议：检查 API 用量和网络后重试。');
                     content = content.replace(/^```(?:json)?\s*/i, '').replace(/\s*```$/i, '').trim();
                     let parsed = null;
-                    try { parsed = JSON.parse(content); } catch (e) { throw new Error('返回格式不是 JSON：' + content.slice(0, 80)); }
+                    try { parsed = JSON.parse(content); } catch (e) { throw new Error('AI 返回格式不是有效 JSON。可能原因：模型输出被截断或格式错误。详情：' + content.slice(0, 80) + '。建议：重试或缩短输入。'); }
                     const cont = (parsed.continue !== false);
                     let replyLines = Array.isArray(parsed.reply) ? parsed.reply.map(function(x){return (x||'').toString().trim();}).filter(Boolean) : [];
                     let chatAfterHangup = Array.isArray(parsed.chatAfterHangup) ? parsed.chatAfterHangup.map(function(x){return (x||'').toString().trim();}).filter(Boolean) : [];
@@ -22490,7 +22545,7 @@ ${historyDesc}
                 sw.classList.remove('on');
             }
             if (enabling) {
-                showConfirmModal('确认开启', '开启后台主动回复会按照几小时消耗一次 API。开启后需保持网络顺畅（如使用代理需一直挂着梯子），否则到点可能无法正常推送到通知栏。\n\n建议使用 Chrome 浏览器，并将本游戏「添加到主屏幕/添加到桌面」。以后尽量从主屏幕的游戏图标进入再开启后台主动回复。\n\n点击开启后，请在当前页面等待「推送已注册」或「注册成功」弹窗出现；出现后即可挂着梯子等待主动回复。如出现失败，请检查网络、代理或 API 配置后重试。\n\n如果通知没有出现在设备通知栏：请检查是否给了 Chrome 通知权限/后台权限，以及是否允许本游戏（网站）的通知权限。确定开吗？', function() {
+                showConfirmModal('确认开启', '【这是什么】关闭游戏后，角色会按你设置的间隔（如 1 小时）主动给你发消息，并推送到手机/电脑的通知栏。\n\n【需要做什么】\n1. 先在「设置」里填好 API Key\n2. 允许浏览器/系统通知权限\n3. 建议用 Chrome，并把游戏「添加到主屏幕」\n4. 点击开启后，等出现「推送已注册」再关掉游戏\n\n【收不到通知？】检查：浏览器通知权限、系统里本网站的通知是否开启。国内用户一般无需梯子（作者已配置国内服务器）。\n\n确定开启吗？', function() {
                     applyToggle(true);
                 }, function() {
                     revertToggleUI();
