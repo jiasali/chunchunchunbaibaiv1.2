@@ -1390,6 +1390,8 @@
             box-shadow: 0 1px 3px rgba(15,23,42,0.16);
             cursor: grab;
             user-select: none;
+            -webkit-user-select: none;
+            touch-action: none;
             white-space: nowrap;
         }
         .chat-timestamp-preview-handle:active {
@@ -10055,15 +10057,31 @@
             var msg = document.getElementById('tipModalMessage');
             if (t) t.textContent = title || '提示';
             if (msg) msg.textContent = message || '';
-            var fade5s = options && options.fadeInSeconds === 5;
-            if (o) { o.classList.remove('tip-modal-fade-5s'); if (fade5s) o.classList.add('tip-modal-fade-5s'); o.classList.add('show'); }
-            if (m) { m.classList.remove('tip-modal-fade-5s'); if (fade5s) m.classList.add('tip-modal-fade-5s'); m.classList.add('show'); }
+            var fadeSeconds = (options && typeof options.fadeInSeconds === 'number') ? options.fadeInSeconds : 10;
+            if (o) {
+                o.classList.remove('tip-modal-fade-5s');
+                o.style.transitionDuration = fadeSeconds + 's';
+                o.classList.add('show');
+            }
+            if (m) {
+                m.classList.remove('tip-modal-fade-5s');
+                m.style.transitionDuration = fadeSeconds + 's';
+                m.classList.add('show');
+            }
         }
         function closeTipModal() {
             var o = document.getElementById('tipModalOverlay');
             var m = document.getElementById('tipModal');
-            if (o) { o.classList.remove('show'); o.classList.remove('tip-modal-fade-5s'); }
-            if (m) { m.classList.remove('show'); m.classList.remove('tip-modal-fade-5s'); }
+            if (o) {
+                o.classList.remove('show');
+                o.classList.remove('tip-modal-fade-5s');
+                o.style.transitionDuration = '';
+            }
+            if (m) {
+                m.classList.remove('show');
+                m.classList.remove('tip-modal-fade-5s');
+                m.style.transitionDuration = '';
+            }
         }
 
         function showConfirmModal(title, message, onOk, onCancel, options) {
@@ -12732,7 +12750,7 @@
                         resultEl.value = body;
                         updateResultCount();
                     } catch (e) {
-                        showTipModal('生成失败', e.message || '网络或 API 错误');
+                        showApiErrorModal(e, '世界观生成');
                     }
                     genBtn.disabled = false;
                     genBtn.textContent = '生成';
@@ -12805,7 +12823,7 @@
                         resultEl.value = body;
                         updateResultCount();
                     } catch (e) {
-                        showTipModal('生成失败', e.message || '网络或 API 错误');
+                        showApiErrorModal(e, '正则设定生成');
                     }
                     genBtn.disabled = false;
                     genBtn.textContent = '生成';
@@ -15710,6 +15728,31 @@
             const bodyPreview = (typeof body === 'string' ? body : (body && body.error && body.error.message ? body.error.message : JSON.stringify(body || ''))).slice(0, 120);
             return ctx + ' 调用失败：' + cause + '。' + (bodyPreview ? ' 详情：' + bodyPreview : '') + ' 【解决方法】' + suggest;
         }
+        /** 统一展示 API 调用失败信息，保证包含解决方法，并淡入显示指定时长（默认 10 秒） */
+        function showApiErrorModal(error, context) {
+            if (typeof showTipModal !== 'function') return;
+            var title = (context ? context : 'API') + ' 调用失败';
+            var msg = '';
+            if (error) {
+                if (typeof error === 'string') {
+                    msg = error;
+                } else if (error.message) {
+                    msg = String(error.message);
+                } else {
+                    try {
+                        msg = JSON.stringify(error);
+                    } catch (_) {
+                        msg = String(error);
+                    }
+                }
+            }
+            if (!msg || msg === 'Failed to fetch') {
+                msg = '网络请求未能发出或被中断。\n\n【解决方法】\n1. 请检查当前网络连接是否正常，尝试刷新页面或更换网络。\n2. 若使用代理或加速器，请确认其可正常访问 API 所在的域名。\n3. 若是本地部署的后端，请确认服务已启动且浏览器可以通过当前 Host/端口访问。';
+            } else if (msg.indexOf('【解决方法】') < 0) {
+                msg += '\n\n【解决方法】\n1. 请检查「设置 → API 配置」中的 Host、路径和 Key 是否填写正确，无多余空格。\n2. 若状态码为 401/403/429，请查看 API 服务商后台的额度、权限和用量限制。\n3. 若为 5xx 错误，请稍后重试，或查看后端 / 服务商状态页是否有故障公告。';
+            }
+            showTipModal(title, msg, { fadeInSeconds: 10 });
+        }
         /** 根据文件名扩展名返回对应类型的图标 URL（Iconify CDN），用于文件卡片展示 */
         function getFileTypeIconUrl(fileName) {
             if (!fileName || typeof fileName !== 'string') return '';
@@ -16351,7 +16394,7 @@
                 if (typeof flushPendingFirstMessages === 'function') flushPendingFirstMessages();
             } catch (e) {
                 console.error('爱心回复失败:', e);
-                showTipModal('调用失败', e.message || String(e));
+                showApiErrorModal(e, '爱心回复');
             } finally {
                 heartRequestInFlight = false;
                 if (btn) {
@@ -17648,8 +17691,7 @@ ${historyDesc}
                 }
             } catch (e) {
                 console && console.error && console.error(e);
-                showTipModal('刷新失败', e && e.message ? e.message : '网络或 API 错误', { fadeInSeconds: 5 });
-                setTimeout(closeTipModal, 5000);
+                showApiErrorModal(e, '角色面板刷新');
             }
             if (btn) { btn.disabled = false; btn.querySelector('span').textContent = '刷新'; }
         }
@@ -19277,10 +19319,10 @@ ${historyDesc}
                     applyAIGenResultToRelationForm(obj);
                     closeRelationAIGenPanel();
                 } else {
-                    showTipModal('生成失败', '无法解析 AI 返回的角色设定');
+                    showTipModal('生成失败', '无法解析 AI 返回的角色设定。\n\n【解决方法】\n1. 请检查当前使用的模型是否支持按要求输出结构化 JSON。\n2. 可在 API 提供方文档中确认该模型的输出风格，并适当简化或收紧提示词。', { fadeInSeconds: 10 });
                 }
             } catch (e) {
-                showTipModal('生成失败', (e && e.message) ? e.message : '网络或 API 错误');
+                showApiErrorModal(e, '角色设定生成');
             }
             hideRelationAIGenLoading();
             if (btn) { btn.disabled = false; btn.textContent = '生成'; }
@@ -20216,7 +20258,13 @@ ${historyDesc}
                 }).then(function() {
                     if (!silent && typeof showTipModal === 'function') showTipModal('推送已注册', '后台主动回复已开启，到时间后会在通知栏收到角色消息');
                 }).catch(function(e) {
-                    if (!silent && typeof showTipModal === 'function') showTipModal('推送注册失败', (e && e.message) ? e.message : '请检查网络或推送服务器是否正常');
+                    if (!silent && typeof showTipModal === 'function') {
+                        var msg = (e && e.message) ? e.message : '';
+                        if (!msg || msg === 'Failed to fetch') {
+                            msg = '无法连接推送服务器，请检查网络是否可用，以及推送服务器地址是否配置正确。';
+                        }
+                        showTipModal('推送注册失败', msg);
+                    }
                 });
             }).catch(function(e) {
                 if (!silent && typeof showTipModal === 'function') showTipModal('推送设置失败', (e && e.message) ? e.message : '请稍后重试');
@@ -20893,8 +20941,15 @@ ${historyDesc}
             if (!preview || !mineEl || !otherEl) return;
             let dragging = null;
 
+            function getPointerPosition(e) {
+                if (e.touches && e.touches[0]) return e.touches[0];
+                if (e.changedTouches && e.changedTouches[0]) return e.changedTouches[0];
+                return e;
+            }
+
             function startDrag(kind, e) {
                 e.preventDefault();
+                if (typeof e.stopPropagation === 'function') e.stopPropagation();
                 dragging = { kind };
             }
 
@@ -20903,8 +20958,9 @@ ${historyDesc}
                 const r = gameState.relations.find(x => x.id === currentChatRelationId);
                 if (!r) return;
                 const rect = preview.getBoundingClientRect();
-                const xPct = ((e.clientX - rect.left) / rect.width) * 100;
-                const yPct = ((e.clientY - rect.top) / rect.height) * 100;
+                const point = getPointerPosition(e);
+                const xPct = ((point.clientX - rect.left) / rect.width) * 100;
+                const yPct = ((point.clientY - rect.top) / rect.height) * 100;
                 const cx = Math.min(100, Math.max(0, xPct));
                 const cy = Math.min(100, Math.max(0, yPct));
                 if (dragging.kind === 'mine') {
@@ -20926,8 +20982,13 @@ ${historyDesc}
 
             mineEl.addEventListener('mousedown', e => startDrag('mine', e));
             otherEl.addEventListener('mousedown', e => startDrag('other', e));
+            mineEl.addEventListener('touchstart', e => startDrag('mine', e), { passive: false });
+            otherEl.addEventListener('touchstart', e => startDrag('other', e), { passive: false });
             document.addEventListener('mousemove', onMove);
             document.addEventListener('mouseup', endDrag);
+            document.addEventListener('touchmove', onMove, { passive: false });
+            document.addEventListener('touchend', endDrag);
+            document.addEventListener('touchcancel', endDrag);
         })();
 
         document.getElementById('ageBadge').addEventListener('click', openProfileModal);
