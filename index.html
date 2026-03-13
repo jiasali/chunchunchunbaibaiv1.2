@@ -4550,6 +4550,51 @@
             transition: opacity 0.25s, transform 0.25s;
         }
         .profile-modal.show { opacity: 1; pointer-events: auto; transform: translate(-50%, -50%) scale(1); }
+        /* 统一提示弹窗：更短 + 可滑动 */
+        #tipModal {
+            max-height: 52vh;
+            display: flex;
+            flex-direction: column;
+        }
+        #tipModal .profile-modal-body {
+            flex: 1;
+            min-height: 0;
+            display: flex;
+            flex-direction: column;
+        }
+        #tipModalMessage {
+            max-height: 28vh;
+            overflow-y: auto;
+        }
+        /* 统一确认弹窗：中等高度 + 可滑动，按钮始终可见 */
+        #confirmModal {
+            max-height: 62vh;
+            display: flex;
+            flex-direction: column;
+        }
+        #confirmModal .profile-modal-body {
+            flex: 1;
+            min-height: 0;
+            display: flex;
+            flex-direction: column;
+        }
+        #confirmModalMessage {
+            max-height: 34vh;
+            overflow-y: auto;
+        }
+        /* 确认弹窗标题下方「请仔细看完」提示动画 */
+        .confirm-modal-hint {
+            margin-top: 4px;
+            font-size: 12px;
+            color: var(--text-muted);
+            letter-spacing: 0.02em;
+            animation: confirmHintPulse 1.6s ease-in-out infinite;
+        }
+        @keyframes confirmHintPulse {
+            0% { opacity: 0.35; transform: translateY(0); }
+            50% { opacity: 1; transform: translateY(-1px); }
+            100% { opacity: 0.35; transform: translateY(0); }
+        }
         .profile-modal-header {
             padding: 24px 24px 0;
             text-align: center;
@@ -6173,7 +6218,10 @@
         <div class="modal-overlay" id="confirmModalOverlay" aria-hidden="true"></div>
         <div class="profile-modal" id="confirmModal" style="max-width:360px;" aria-hidden="true">
             <div class="profile-modal-header">
-                <div class="profile-modal-title" id="confirmModalTitle">确认</div>
+                <div>
+                    <div class="profile-modal-title" id="confirmModalTitle">确认</div>
+                    <div class="confirm-modal-hint">请仔细看完再选择哦</div>
+                </div>
             </div>
             <div class="profile-modal-body" style="padding:0 24px 24px;">
                 <p id="confirmModalMessage" style="margin:0 0 18px;font-size:15px;line-height:1.55;color:var(--text-body);white-space:pre-wrap;word-break:break-word;"></p>
@@ -20101,7 +20149,11 @@ ${historyDesc}
                             });
                         }).catch(function(e) {
                             var msg = (e && e.message) ? e.message : '请检查网络或稍后重试';
-                            if (msg === 'VAPID_NOT_CONFIGURED') msg = '推送服务器未配置 VAPID 密钥，请联系游戏作者部署 push-backend 并设置 VAPID_PUBLIC_KEY 和 VAPID_PRIVATE_KEY';
+                            if (msg === 'VAPID_NOT_CONFIGURED') {
+                                msg = '推送服务器未配置 VAPID 密钥，请联系游戏作者部署 push-backend 并设置 VAPID_PUBLIC_KEY 和 VAPID_PRIVATE_KEY';
+                            } else if (msg && msg.indexOf('Registration failed') >= 0) {
+                                msg = '当前浏览器不支持网页推送功能，建议使用 Chrome、Edge 等现代浏览器（通过 HTTPS 地址）打开本游戏再开启「后台主动回复」。如果还是不行，请将本游戏添加到主屏幕，并从主屏幕图标重新打开后再尝试开启。';
+                            }
                             if (typeof showTipModal === 'function') showTipModal('推送订阅失败', msg);
                             return null;
                         });
