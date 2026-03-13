@@ -3485,6 +3485,11 @@
             background: var(--bg-canvas); z-index: 260; flex-direction: column;
         }
         #fontImportPanel.show { display: flex; }
+        #mapAttrRulesPanel {
+            display: none; position: fixed; inset: 0; max-width: 480px; margin: 0 auto;
+            background: var(--bg-canvas); z-index: 260; flex-direction: column;
+        }
+        #mapAttrRulesPanel.show { display: flex; }
         .font-scope-list {
             display: flex;
             flex-direction: column;
@@ -7092,6 +7097,10 @@
                 <span class="storage-clean-label">自定义配色与图标</span>
                 <span class="storage-clean-arrow">›</span>
             </div>
+            <div class="storage-clean-row" id="mapAttrRulesRow">
+                <span class="storage-clean-label">地图属性规则（自定义）</span>
+                <span class="storage-clean-arrow">›</span>
+            </div>
             <div class="api-section">
                 <div class="card-title" style="margin-bottom:8px">API 调用模式</div>
                 <div class="card api-map-mode-card" id="apiMapModeCard">
@@ -7302,6 +7311,50 @@
         </div>
     </div>
 
+    <!-- 地图属性规则（自定义）全屏页 -->
+    <div id="mapAttrRulesPanel">
+        <div class="notification-settings-header storage-clean-header">
+            <button type="button" class="notification-settings-back" id="mapAttrRulesBackBtn" aria-label="返回">
+                <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" width="18" height="18">
+                    <path d="M14.5 6L9 12l5.5 6" stroke="#7F8C8D" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+                </svg>
+            </button>
+            <div class="storage-clean-header-text">
+                <span class="notification-settings-title">地图属性规则（自定义）</span>
+                <span class="storage-clean-subtitle">让玩家自己决定：地图剧情生成后，属性如何加减</span>
+            </div>
+        </div>
+        <div class="theme-customize-body">
+            <div class="theme-section">
+                <div class="card-title" style="margin-bottom:6px;">开关</div>
+                <div class="control-row" style="align-items:center;">
+                    <input type="checkbox" id="mapAttrRulesEnabled" style="margin-right:8px;">
+                    <span class="control-label">启用自定义地图属性加减规则（仅影响玩家属性）</span>
+                </div>
+                <div class="theme-section-hint" style="margin-top:8px;">
+                    使用说明：你在下面用 JSON 写规则。每次「地图相遇剧情」生成成功后，会先按你写的规则给玩家属性加减，再显示在结果面板里。<br>
+                    规则只影响玩家（player）的属性，不会自动改 NPC 的设定；NPC 的好感度变化仍由剧情返回的 affinityDelta 控制。
+                </div>
+            </div>
+            <div class="theme-section">
+                <div class="card-title" style="margin-bottom:6px;">规则 JSON（玩家可编辑）</div>
+                <textarea id="mapAttrRulesJson" class="api-input" style="width:100%;min-height:240px;white-space:pre;font-family:ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace;" spellcheck="false"></textarea>
+                <div class="theme-section-hint" style="margin-top:8px;">
+                    JSON 格式说明（最常用 3 种写法）：<br>
+                    1）default：所有地图默认加减（可填 0）<br>
+                    2）stages：按人生阶段 stageId（crib/childhood/teen/adult/midlife/elder）设置<br>
+                    3）keys：按地图 key 设置（内置通常是 "builtin:xxx"；自定义通常在生成时能看到 key）<br><br>
+                    规则合并顺序：default → stages[stageId].default → stages[stageId].keys[key] → keys[key] → mapsByName[mapName]（后者覆盖前者）<br>
+                    支持属性键：health/happiness/money/intelligence/eq/charm/appearance/pressure，以及 ageSpecific.*（如 "ageSpecific.study": +5）。
+                </div>
+                <div class="theme-color-actions" style="margin-top:10px;">
+                    <button type="button" class="theme-color-reset-btn" id="mapAttrRulesResetBtn">恢复模板</button>
+                    <button type="button" class="theme-color-save-btn" id="mapAttrRulesSaveBtn">保存规则</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- 使用教程全屏页 -->
     <div id="tutorialPanel">
         <div class="notification-settings-header storage-clean-header">
@@ -7456,10 +7509,15 @@
             <p><strong>3. 预设正则世界观</strong></p>
             <ul>
                 <li><strong>新增预设</strong>：手动写世界观名称和描述；<strong>AI 正则创作 / AI 世界观创作</strong>：输入关键词，AI 自动生成世界观；<strong>导入 / 导出预设</strong>：用 JSON 文件备份或加载世界观。这些预设会在生成剧情、创建角色时被引用。</li>
+                <li><strong>想让地图剧情自动生成 NPC（并出现在「关系」里）怎么写</strong>：在世界观内容或地图提示词里，明确写出类似句式：<br>
+                    - 「在这张地图会遇到某个人物/会遇到一位……」或「请生成一个合适的新人物」或「需要新增角色」<br>
+                    - 例：<em>“在【咖啡馆】会遇到一位 26 岁的女医生，性格温柔但有边界感；请生成该人物完整设定，并在剧情里自然登场。”</em><br>
+                    当你在「地图」页点某张地图生成【地图剧情】时，若 AI 按要求返回了新人物设定，系统会自动把 Ta 加到「关系」列表里（可聊天、可改资料）。</li>
             </ul>
             <p><strong>4. 自定义地图</strong></p>
             <ul>
                 <li>顶部切换年龄阶段（婴儿、童年、少年等），为每个阶段添加地图：填名字和描述（提示词），AI 生成剧情时会参考。地图会直接显示在「地图」页。</li>
+                <li><strong>提示词小技巧</strong>：如果你希望在某个自定义地图里“固定遇到某人”，也可以把「会遇到某人物 / 生成合适的人物」写进该地图的提示词里，效果同上。</li>
             </ul>
             <p><strong>5. 全屏模式 / 自定义字体 / 自定义配色与图标</strong></p>
             <ul>
@@ -11832,6 +11890,100 @@
             document.getElementById('meetMapStoryOverlay').classList.remove('show');
         }
 
+        function getDefaultMapAttrRulesTemplate() {
+            return JSON.stringify({
+                default: { health: 0, happiness: 0, money: 0, intelligence: 0, eq: 0, charm: 0, appearance: 0, pressure: 0 },
+                stages: {
+                    childhood: { default: { intelligence: 1, happiness: 1 } },
+                    teen: { default: { intelligence: 1, pressure: 1 } }
+                },
+                keys: {},
+                mapsByName: {}
+            }, null, 2);
+        }
+
+        function openMapAttrRulesPanel() {
+            const panel = document.getElementById('mapAttrRulesPanel');
+            if (!panel) return;
+            panel.classList.add('show');
+            const enabledEl = document.getElementById('mapAttrRulesEnabled');
+            const jsonEl = document.getElementById('mapAttrRulesJson');
+            if (enabledEl) enabledEl.checked = !!userSettings.mapAttrRulesEnabled;
+            if (jsonEl) jsonEl.value = (typeof userSettings.mapAttrRulesJson === 'string' && userSettings.mapAttrRulesJson.trim())
+                ? userSettings.mapAttrRulesJson
+                : getDefaultMapAttrRulesTemplate();
+        }
+
+        function closeMapAttrRulesPanel() {
+            const panel = document.getElementById('mapAttrRulesPanel');
+            if (!panel) return;
+            panel.classList.remove('show');
+        }
+
+        function getMapAttrRuleDelta(stageId, key, mapName) {
+            if (!userSettings.mapAttrRulesEnabled) return {};
+            let rules = null;
+            try {
+                rules = JSON.parse((userSettings.mapAttrRulesJson || '').toString() || '{}');
+            } catch (e) {
+                return {};
+            }
+            if (!rules || typeof rules !== 'object') return {};
+            function safeObj(x) { return (x && typeof x === 'object' && !Array.isArray(x)) ? x : {}; }
+            const merged = {};
+            function mergeDelta(obj) {
+                const o = safeObj(obj);
+                Object.keys(o).forEach(k => {
+                    const v = o[k];
+                    if (typeof v === 'number' && isFinite(v)) merged[k] = v;
+                });
+            }
+            mergeDelta(rules.default);
+            const stages = safeObj(rules.stages);
+            const stage = safeObj(stages[stageId]);
+            mergeDelta(stage.default);
+            const stageKeys = safeObj(stage.keys);
+            mergeDelta(stageKeys[key]);
+            const keys = safeObj(rules.keys);
+            mergeDelta(keys[key]);
+            const mapsByName = safeObj(rules.mapsByName);
+            mergeDelta(mapsByName[mapName]);
+            return merged;
+        }
+
+        function applyPlayerStatDeltaMap(deltaMap) {
+            const changesText = [];
+            if (!deltaMap || typeof deltaMap !== 'object') return changesText;
+            if (!gameState.stats || typeof gameState.stats !== 'object') {
+                gameState.stats = { health: 100, happiness: 100, money: 0, intelligence: 10, eq: 10, charm: 50, appearance: 50, pressure: 0, ageSpecific: {} };
+            }
+            if (!gameState.stats.ageSpecific || typeof gameState.stats.ageSpecific !== 'object') gameState.stats.ageSpecific = {};
+            const clamp01 = (v) => Math.min(100, Math.max(0, v));
+            Object.keys(deltaMap).forEach(k => {
+                const delta = Number(deltaMap[k]);
+                if (!isFinite(delta) || delta === 0) return;
+                if (k.startsWith('ageSpecific.')) {
+                    const sub = k.slice('ageSpecific.'.length).trim();
+                    if (!sub) return;
+                    const cur = gameState.stats.ageSpecific[sub] ?? 50;
+                    const next = clamp01((Number(cur) || 0) + delta);
+                    gameState.stats.ageSpecific[sub] = next;
+                    changesText.push(sub + (delta >= 0 ? '+' : '') + delta);
+                    return;
+                }
+                if (!(k in gameState.stats)) return;
+                if (k === 'money') {
+                    gameState.stats.money = Math.max(0, (Number(gameState.stats.money) || 0) + delta);
+                    changesText.push('money' + (delta >= 0 ? '+' : '') + delta);
+                    return;
+                }
+                const cur = Number(gameState.stats[k]) || 0;
+                gameState.stats[k] = clamp01(cur + delta);
+                changesText.push(k + (delta >= 0 ? '+' : '') + delta);
+            });
+            return changesText;
+        }
+
         function triggerMeetMapGenerate(stageId, key) {
             const { name: mapName, prompt: mapPrompt } = getMapDisplayNameAndPrompt(stageId, key);
             const participants = getParticipantsForMap(stageId, key);
@@ -12019,8 +12171,15 @@
                     const attrsEl = document.getElementById('meetMapStoryAttrs');
                     const attrsWrap = document.getElementById('meetMapStoryAttrsWrap');
                     const attrLines = [];
+                    const ruleDelta = getMapAttrRuleDelta(stageId, key, mapName);
+                    const playerDeltaText = applyPlayerStatDeltaMap(ruleDelta);
                     if (newChars.length) {
                         attrLines.push('新增角色：' + newChars.map(nc => (nc && nc.name) ? nc.name : '').filter(Boolean).join('、'));
+                    }
+                    if (playerDeltaText.length) {
+                        attrLines.push('玩家（自定义规则）：' + playerDeltaText.join('、'));
+                        saveGame();
+                        if (typeof renderStats === 'function') renderStats();
                     }
                     if (changes.length) {
                         changes.forEach(c => {
@@ -16900,6 +17059,18 @@
                 if (!Array.isArray(userSettings.customFont.scopes)) {
                     userSettings.customFont.scopes = [];
                 }
+                if (typeof userSettings.mapAttrRulesEnabled !== 'boolean') userSettings.mapAttrRulesEnabled = false;
+                if (typeof userSettings.mapAttrRulesJson !== 'string') {
+                    userSettings.mapAttrRulesJson = JSON.stringify({
+                        default: { health: 0, happiness: 0, money: 0, intelligence: 0, eq: 0, charm: 0, appearance: 0, pressure: 0 },
+                        stages: {
+                            childhood: { default: { intelligence: 1, happiness: 1 } },
+                            teen: { default: { intelligence: 1, pressure: 1 } }
+                        },
+                        keys: {},
+                        mapsByName: {}
+                    }, null, 2);
+                }
                 if (!userSettings.petFloating || typeof userSettings.petFloating !== 'object') {
                     userSettings.petFloating = { enabled: false, name: '小宠', position: { x: 20, y: 30 }, currentEmotion: 'default', emotions: { default: { label: '默认', img: '' }, happy: { label: '开心', img: '' }, sad: { label: '委屈', img: '' }, angry: { label: '生气', img: '' }, tired: { label: '疲惫', img: '' } } };
                 }
@@ -16930,6 +17101,18 @@
                 }
                 if (!Array.isArray(userSettings.customFont.scopes)) {
                     userSettings.customFont.scopes = [];
+                }
+                if (typeof userSettings.mapAttrRulesEnabled !== 'boolean') userSettings.mapAttrRulesEnabled = false;
+                if (typeof userSettings.mapAttrRulesJson !== 'string') {
+                    userSettings.mapAttrRulesJson = JSON.stringify({
+                        default: { health: 0, happiness: 0, money: 0, intelligence: 0, eq: 0, charm: 0, appearance: 0, pressure: 0 },
+                        stages: {
+                            childhood: { default: { intelligence: 1, happiness: 1 } },
+                            teen: { default: { intelligence: 1, pressure: 1 } }
+                        },
+                        keys: {},
+                        mapsByName: {}
+                    }, null, 2);
                 }
                 if (!userSettings.petFloating || typeof userSettings.petFloating !== 'object') {
                     userSettings.petFloating = { enabled: false, name: '小宠', position: { x: 20, y: 30 }, currentEmotion: 'default', emotions: { default: { label: '默认', img: '' }, happy: { label: '开心', img: '' }, sad: { label: '委屈', img: '' }, angry: { label: '生气', img: '' }, tired: { label: '疲惫', img: '' } } };
@@ -18359,6 +18542,33 @@ ${historyDesc}
         document.getElementById('storageCleanBackBtn').addEventListener('click', closeStorageCleanPanel);
         document.getElementById('themeCustomizeRow').addEventListener('click', openThemeCustomizePanel);
         document.getElementById('themeCustomizeBackBtn').addEventListener('click', closeThemeCustomizePanel);
+        var mapAttrRulesRow = document.getElementById('mapAttrRulesRow');
+        if (mapAttrRulesRow) mapAttrRulesRow.addEventListener('click', openMapAttrRulesPanel);
+        var mapAttrRulesBackBtn = document.getElementById('mapAttrRulesBackBtn');
+        if (mapAttrRulesBackBtn) mapAttrRulesBackBtn.addEventListener('click', closeMapAttrRulesPanel);
+        var mapAttrRulesResetBtn = document.getElementById('mapAttrRulesResetBtn');
+        if (mapAttrRulesResetBtn) mapAttrRulesResetBtn.addEventListener('click', function() {
+            var jsonEl = document.getElementById('mapAttrRulesJson');
+            if (jsonEl) jsonEl.value = getDefaultMapAttrRulesTemplate();
+            if (typeof showTipModal === 'function') showTipModal('已恢复模板', '你可以在模板基础上修改，然后点击「保存规则」。');
+        });
+        var mapAttrRulesSaveBtn = document.getElementById('mapAttrRulesSaveBtn');
+        if (mapAttrRulesSaveBtn) mapAttrRulesSaveBtn.addEventListener('click', function() {
+            var enabledEl = document.getElementById('mapAttrRulesEnabled');
+            var jsonEl = document.getElementById('mapAttrRulesJson');
+            var enabled = enabledEl ? !!enabledEl.checked : false;
+            var txt = jsonEl ? (jsonEl.value || '').toString() : '';
+            if (enabled) {
+                try { JSON.parse(txt || '{}'); } catch (e) {
+                    if (typeof showTipModal === 'function') showTipModal('保存失败', '规则 JSON 不是有效格式，请检查逗号、引号和括号。');
+                    return;
+                }
+            }
+            userSettings.mapAttrRulesEnabled = enabled;
+            userSettings.mapAttrRulesJson = txt && txt.trim() ? txt : getDefaultMapAttrRulesTemplate();
+            saveGame();
+            if (typeof showTipModal === 'function') showTipModal('已保存', enabled ? '自定义地图属性规则已启用。' : '规则已保存（当前为关闭状态）。');
+        });
         var fullscreenModeRow = document.getElementById('fullscreenModeRow');
         if (fullscreenModeRow) fullscreenModeRow.addEventListener('click', forceEnterFullscreen);
         var fontImportRow = document.getElementById('fontImportRow');
@@ -20013,100 +20223,8 @@ ${historyDesc}
             }
         }
         function runProactiveCatchUpOnLoad() {
-            openProactiveDB().then(db => {
-                const tx = db.transaction(PROACTIVE_STORE, 'readonly');
-                const req = tx.objectStore(PROACTIVE_STORE).getAll();
-                req.onsuccess = () => {
-                    const list = req.result || [];
-                    const now = Date.now();
-                    const due = list.filter(item => item && item.proactiveReply && (now - (item.lastProactiveAt || 0)) >= ((item.proactiveReplyIntervalHours || 1) * 60 * 60 * 1000));
-                    if (due.length === 0) return;
-                    Promise.all(due.map(item => {
-                        const intervalHours = item.proactiveReplyIntervalHours || 1;
-                        const intervalMs = intervalHours * 60 * 60 * 1000;
-                        const elapsed = now - (item.lastProactiveAt || 0);
-                        const missedCount = Math.min(100, Math.max(1, Math.floor(elapsed / intervalMs)));
-                        if (missedCount < 1) return Promise.resolve(false);
-                        const endpoint = ((item.api && item.api.endpoint) || '').trim().replace(/\/$/, '');
-                        const url = endpoint.endsWith('/chat/completions') ? endpoint : endpoint + '/chat/completions';
-                        var timeCtx = getRealTimeContextText();
-                        var userContent = '【重要】你已经隔了 ' + (missedCount * intervalHours) + ' 小时没有和对方联系。请根据你的人设、与对方的聊天记录，模拟在这段时间内每隔 ' + intervalHours + ' 小时主动给对方发一条消息的节奏，共输出 ' + missedCount + ' 条消息。每条消息应体现对应时刻的语境（如早晨的问候、中午的关心、晚上的想念等，体现时间流逝的感知）。只输出一个 JSON 对象：{"reply":["第1条消息","第2条消息",...,"第' + missedCount + '条消息"]}。严禁输出心理独白、旁白等。\n\n' + timeCtx + '\n【聊天记录】\n' + (Array.isArray(item.historyLines) ? item.historyLines.join('\n') : '（暂无记录）') + (item.worldPresetBlock || '') + (item.playerProfileBlock || '');
-                        return fetch(url, {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + (item.api && item.api.key ? item.api.key : '') },
-                            body: JSON.stringify({
-                                model: (item.api && item.api.model) || 'gpt-3.5-turbo',
-                                messages: [
-                                    { role: 'system', content: '你是「' + (item.name || 'TA') + '」。你的设定如下：\n' + (item.charInfo || '') + '\n\n请以该角色身份，主动给玩家发多条消息，每条体现不同时刻的语境。' },
-                                    { role: 'user', content: userContent }
-                                ],
-                                temperature: (item.api && typeof item.api.temperature === 'number') ? item.api.temperature : 0.85
-                            })
-                        }).then(res => res.ok ? res.json() : Promise.reject()).then(data => {
-                            let content = (data.choices && data.choices[0] && data.choices[0].message && data.choices[0].message.content) ? data.choices[0].message.content.trim() : '';
-                            if (!content) return false;
-                            content = content.replace(/^```(?:json)?\s*/i, '').replace(/\s*```$/i, '').trim();
-                            var replyList = [];
-                            try {
-                                var p = JSON.parse(content);
-                                if (Array.isArray(p.reply)) {
-                                    replyList = p.reply.map(function(x) { return (x || '').toString().trim(); }).filter(Boolean);
-                                } else if (typeof p.reply === 'string') {
-                                    replyList = [p.reply.toString().trim()];
-                                }
-                            } catch (e) {
-                                replyList = [content];
-                            }
-                            if (replyList.length === 0) return false;
-                            gameState.chatLogs = gameState.chatLogs || {};
-                            gameState.chatLogs[item.relationId] = gameState.chatLogs[item.relationId] || [];
-                            var lastAt = item.lastProactiveAt || 0;
-                            for (var i = 0; i < replyList.length; i++) {
-                                var sentAt = Math.min(lastAt + (i + 1) * intervalMs, now);
-                                gameState.chatLogs[item.relationId].push({ from: 'other', text: replyList[i], sentAt: sentAt });
-                            }
-                            item.lastProactiveAt = now;
-                            var rel = gameState.relations.find(x => x.id === item.relationId);
-                            if (rel) rel.lastProactiveAt = now;
-                            item.gameState = JSON.parse(JSON.stringify(gameState));
-                            item.historyLines = buildHistoryLinesForRelation(item.relationId);
-                            var name = (function() { var r = gameState.relations.find(x => x.id === item.relationId); return r ? (typeof getRelationDisplayName === 'function' ? getRelationDisplayName(r) : null) || r.name || 'TA' : item.name || 'TA'; })();
-                            var lastMsg = replyList[replyList.length - 1];
-                            var hhmm = getNowHHMM();
-                            var baseBody = replyList.length > 1 ? (name + ' 发来了 ' + replyList.length + ' 条新消息') : (lastMsg.slice(0, 100) + (lastMsg.length > 100 ? '...' : ''));
-                            var body = (hhmm ? ('[' + hhmm + '] ') : '') + baseBody;
-                            var r = gameState.relations.find(x => x.id === item.relationId);
-                            if (typeof tryShowSpecialCarePopup === 'function' && r && r.starred && !r.muted) {
-                                try { tryShowSpecialCarePopup(item.relationId, { from: 'other', text: lastMsg }); } catch (e) {}
-                            } else if (typeof showTipModal === 'function') {
-                                try { showTipModal(name + ' 发来新消息', body); } catch (e) {}
-                            }
-                            if ('Notification' in window && Notification.permission === 'granted') {
-                                var icon = (r && r.avatar) || undefined;
-                                if (navigator.serviceWorker && navigator.serviceWorker.ready) {
-                                    navigator.serviceWorker.ready.then(function(reg) {
-                                        reg.showNotification(name, { body: body, icon: icon, tag: 'proactive-' + item.relationId, data: { relationId: item.relationId, url: location.origin + location.pathname } });
-                                    }).catch(function() { try { new Notification(name, { body: body, icon: icon }); } catch (e) {} });
-                                } else {
-                                    try { new Notification(name, { body: body, icon: icon }); } catch (e) {}
-                                }
-                            }
-                            return openProactiveDB().then(db2 => {
-                                var wtx = db2.transaction(PROACTIVE_STORE, 'readwrite');
-                                wtx.objectStore(PROACTIVE_STORE).put(item);
-                                return new Promise(function(res, rej) { wtx.oncomplete = function() { res(true); }; wtx.onerror = function() { rej(); }; });
-                            });
-                        }).catch(function() { return false; });
-                    })).then(function(results) {
-                        if (results.some(function(x) { return x; })) {
-                            saveGame();
-                            syncProactiveToIndexedDB();
-                            if (currentChatRelationId) renderChatMessages();
-                            try { registerWithPushServer({ silent: true }); } catch (e) {}
-                        }
-                    });
-                };
-            }).catch(function() {});
+            // 补拉逻辑已关闭：不在打开游戏时根据缺失的时间批量生成消息
+            return;
         }
 
         var chatSearchActiveTab = 'text';
@@ -22545,7 +22663,7 @@ ${historyDesc}
                 sw.classList.remove('on');
             }
             if (enabling) {
-                showConfirmModal('确认开启', '【这是什么】关闭游戏后，角色会按你设置的间隔（如 1 小时）主动给你发消息，并推送到手机/电脑的通知栏。\n\n【需要做什么】\n1. 先在「设置」里填好 API Key\n2. 允许浏览器/系统通知权限\n3. 建议用 Chrome，并把游戏「添加到主屏幕」\n4. 点击开启后，等出现「推送已注册」再关掉游戏\n\n【收不到通知？】检查：浏览器通知权限、系统里本网站的通知是否开启。国内用户一般无需梯子（作者已配置国内服务器）。\n\n确定开启吗？', function() {
+                showConfirmModal('确认开启', '开启后会发生什么：\n- 这个角色会按你设置的「间隔（小时）」主动发一条消息。\n- 如果系统允许通知，会在手机/电脑的通知栏显示。\n\n你需要做的 2 件事：\n1) 设置 → API 配置：填好 API Key（没填就无法生成消息）\n2) 允许本网站的通知权限（弹窗出现时点“允许”）\n\n关于后台与清后台（很重要）：\n- 只要浏览器/网页应用还活着（没被系统杀死），通知更容易按间隔出现。\n- 如果你手动“清理后台/划掉/强制停止”，很多机型会直接停止后台任务，期间可能不会再有通知。\n- 本版本已关闭“补拉”：清后台期间漏掉的消息不会在下次打开游戏时补出来。\n\n建议（更稳定）：\n- 安卓尽量用 Chrome，并把游戏添加到主屏幕；必要时把浏览器加入电池白名单。\n- iPhone/iPad 也建议用 Safari 添加到主屏幕，并确保系统通知没关。\n\n确定开启吗？', function() {
                     applyToggle(true);
                 }, function() {
                     revertToggleUI();
