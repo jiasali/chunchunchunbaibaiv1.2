@@ -118,6 +118,45 @@ async function callProactiveAPI(data) {
   return replyText || content;
 }
 
+async function handleProactiveWakeup(relationId, url) {
+  if (!relationId) return;
+  try {
+    const item = await getProactiveData(relationId);
+    if (!item || !item.proactiveReply) return;
+    const now = Date.now();
+    const intervalMs = (item.proactiveReplyIntervalHours || 1) * 60 * 60 * 1000;
+    const lastAt = item.lastProactiveAt || 0;
+    if (now - lastAt < intervalMs) return;
+    const replyText = await callProactiveAPI(item);
+    if (!replyText) return;
+    const name = (item.name || 'TA').toString().trim();
+    const avatar = item.avatar || '';
+    item.lastProactiveAt = now;
+    if (!item.gameState) item.gameState = {};
+    if (!item.gameState.chatLogs) item.gameState.chatLogs = {};
+    if (!item.gameState.chatLogs[item.relationId]) item.gameState.chatLogs[item.relationId] = [];
+    item.gameState.chatLogs[item.relationId].push({ from: 'other', text: replyText });
+    const db = await openDB();
+    await new Promise((resolve, reject) => {
+      const tx = db.transaction(STORE_NAME, 'readwrite');
+      tx.objectStore(STORE_NAME).put(item);
+      tx.oncomplete = resolve;
+      tx.onerror = () => reject(tx.error);
+    });
+    const hhmm = getNowHHMM();
+    const baseBody = replyText.slice(0, 100) + (replyText.length > 100 ? '...' : '');
+    const body = (hhmm ? ('[' + hhmm + '] ') : '') + baseBody;
+    await self.registration.showNotification(name, {
+      body: body,
+      icon: avatar || undefined,
+      tag: 'proactive-' + item.relationId,
+      data: { relationId: item.relationId, url: url || (self.location.origin + self.location.pathname) }
+    });
+  } catch (err) {
+    console.error('Proactive wakeup failed:', err);
+  }
+}
+
 /* Web Push：iOS 等依赖服务端推送，收到后在此展示通知 */
 /* push-backend 发送格式为 { data: { title, body, icon, tag, data: { relationId, url } } } */
 self.addEventListener('push', (e) => {
@@ -125,6 +164,14 @@ self.addEventListener('push', (e) => {
   try {
     const payload = e.data.json();
     const d = (payload && payload.data) || payload || {};
+    const type = d.type || payload.type;
+    // 服务器仅唤醒模式：收到唤醒信号后在本机生成消息并通知
+    if (type === 'proactive-wakeup') {
+      const relationId = d.relationId || payload.relationId;
+      const url = d.url || payload.url || (self.location.origin + self.location.pathname);
+      e.waitUntil(handleProactiveWakeup(relationId, url));
+      return;
+    }
     const inner = (d.data && typeof d.data === 'object') ? d.data : {};
     const title = (d.title || payload.title) || '纯白人生';
     const body = (d.body || payload.body) || '';

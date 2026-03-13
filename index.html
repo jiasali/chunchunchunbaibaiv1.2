@@ -19992,9 +19992,9 @@ ${historyDesc}
         function closeProactiveReplySettingsPanel() {
             document.getElementById('proactiveReplySettingsPanel').classList.remove('show');
         }
-        /* 推送服务器 URL：游戏作者部署 Cloudflare Worker 后填入，用于 iOS 后台推送。留空则仅安卓 periodicSync 生效 */
+        /* 推送服务器 URL：游戏作者部署 Cloudflare Worker / 自托管推送服务后填入，用于 iOS 后台推送。留空则仅安卓 periodicSync 生效 */
         var PUSH_SERVER_URL = 'https://push.xiaoyuncloud.cn';
-        /* 国内备用地址：workers.dev 在国内可能打不开，可绑定自定义域名后填入，如 'https://push.你的域名.com'。留空则只用上面的地址 */
+        /* 国内备用地址：若你为推送服务绑定了额外域名（如 Nginx 反代或其它节点），可在此填入；留空则只用上面的地址 */
         var PUSH_SERVER_URL_CN = 'https://push.xiaoyuncloud.cn';
         const PROACTIVE_DB = 'tabula_proactive_db';
         const PROACTIVE_STORE = 'proactive';
