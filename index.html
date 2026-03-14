@@ -7586,25 +7586,13 @@
                 <strong>时间戳设置</strong>：控制聊天里每条消息是否显示时间。<br>
                 <strong>查找聊天记录</strong>：按文字或图片搜索历史消息。</li>
             </ul>
-            <p><strong>8. 后台主动回复与通知（重点）</strong></p>
+            <p><strong>8. 主动补拉（角色先开口）</strong></p>
             <ul>
-                <li><strong>在哪开</strong>：进某个角色的聊天 → 点右上角「···」→ 选「消息通知设置」→ 打开「后台主动回复」。</li>
-                <li><strong>什么意思</strong>：角色会在你不打开游戏的时候，按你设定的间隔，主动给你发一条消息，并推送到你的通知栏。就像 Ta 真的在找你聊天一样。</li>
-                <li><strong>间隔</strong>：「每隔多少小时回复一次」可填 0.01～168。如 0.1=6分钟、0.5=30分钟、1=1小时、3=3小时。你设多少，通知就按该间隔推送（Web Push / 打开游戏时补拉均遵循；安卓 periodicSync 受浏览器限制约 12 小时，无法缩短）。</li>
-            </ul>
-            <p><strong>8.1 电脑、安卓、iOS 分别怎么用</strong></p>
-            <ul>
-                <li><strong>电脑</strong>：第一次开时会弹出「是否允许通知」，点允许。之后只要浏览器在后台开着，到时间就会在桌面右下角（或系统通知中心）弹出通知，上面有角色名字和消息内容。</li>
-                <li><strong>安卓手机</strong>：第一次开时同样会问「是否允许通知」，选允许。之后即使完全退出游戏，角色也会按间隔往通知栏发消息。通知里会显示角色名字 + 消息内容，很多机型还能显示角色头像小图。</li>
-                <li><strong>iOS（iPhone / iPad）</strong>：需要先「添加到主屏幕」：用 Safari 打开游戏 → 点分享 → 选「添加到主屏幕」，以后从主屏幕图标进游戏。进去后像安卓一样开「后台主动回复」并允许通知。这样就算不打开游戏，也能在通知中心收到角色消息。通知里会有角色名字和消息内容；图标一般是游戏图标，不一定会换成角色头像，这是系统限制。</li>
-            </ul>
-            <p><strong>8.2 常见问题</strong></p>
-            <ul>
-                <li><strong>收不到通知</strong>：检查浏览器或系统设置里，有没有把这个网站的通知关掉。可以关掉再重新打开「后台主动回复」，按提示重新授权。</li>
-                <li><strong>只有打开游戏才有，关掉就没有</strong>：可能是设备或浏览器不支持后台推送，或省电模式限制了。可以试试把浏览器加入白名单，或坚持用主屏幕图标方式打开（iOS）。</li>
-                <li><strong>安卓用 Edge 添加主屏幕，通知栏不显示</strong>：Edge 安卓对 Web Push 支持不完善，应用关闭时可能收不到通知；打开应用时会弹窗提示新消息。建议改用 Chrome 添加主屏幕，通知更稳定。</li>
-                <li><strong>安卓有头像，iOS 没有</strong>：系统规则不同，不是 bug。我们尽量在标题和正文里写清楚是谁、说了什么。</li>
-                <li><strong>不想被打扰</strong>：随时在聊天设置里关掉「后台主动回复」，或在系统里关掉这个网站的通知。</li>
+                <li><strong>在哪开</strong>：进某个角色的聊天 → 点右上角「···」→ 选「消息通知设置」→ 打开「主动补拉」。</li>
+                <li><strong>什么意思</strong>：你设定一个间隔（比如 1 小时），之后每次重新打开游戏时，角色会根据离上次联系过去了多久，<strong>一次性补上这段时间里本该发给你的多条消息</strong>，直接出现在聊天里。</li>
+                <li><strong>间隔</strong>：「每隔多少小时『来找你一次』」可填 0.01～168。如 0.1=6分钟、0.5=30分钟、1=1小时、3=3小时。间隔越短，理论上补出来的“来找你次数”就越多。</li>
+                <li><strong>多条而不是一条</strong>：补拉时会按「错过了多少个时间点」一次生成一组消息，<strong>每个时间点可以不止一句话</strong>，像这些小时里他断断续续在和你说话，而不是只冒出一句“我回来了”。</li>
+                <li><strong>不再用通知栏</strong>：本版本不再依赖系统通知，也不需要任何 push 服务器。所有补拉都只发生在你打开游戏、进入聊天界面的那一刻。</li>
             </ul>
             <p><strong>9. 重开人生</strong></p>
             <ul>
@@ -8683,7 +8671,7 @@
         </div>
     </div>
 
-    <!-- 后台主动回复设置子页面 -->
+    <!-- 主动补拉设置子页面 -->
     <div id="proactiveReplySettingsPanel">
         <div class="notification-settings-header">
             <button type="button" class="notification-settings-back" id="proactiveSettingsBackBtn" aria-label="返回">
@@ -8691,22 +8679,26 @@
                     <path d="M14.5 6L9 12l5.5 6" stroke="#7F8C8D" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
                 </svg>
             </button>
-            <span class="notification-settings-title">后台主动回复</span>
+            <span class="notification-settings-title">主动补拉 · 角色先开口</span>
         </div>
         <div class="proactive-settings-body">
             <div class="profile-field">
                 <div class="proactive-interval-row">
-                    <span class="proactive-interval-label">每隔多少小时回复一次</span>
+                    <span class="proactive-interval-label">每隔多少小时「来找你一次」</span>
                     <input type="number" class="proactive-interval-input" id="proactiveIntervalHours" min="0.01" max="168" value="1" step="0.01" title="0.01～168 小时，如 0.1=6分钟、0.5=30分钟">
                 </div>
                 <div class="proactive-enable-row">
-                    <span class="proactive-enable-label">开启后台主动回复</span>
+                    <span class="proactive-enable-label">开启主动补拉</span>
                     <label class="chat-switch" id="proactiveEnableSwitch">
                         <input type="checkbox" id="proactiveEnableToggle" style="opacity:0;width:0;height:0;">
                         <span class="chat-switch-thumb" id="proactiveEnableThumb"></span>
                     </label>
                 </div>
-                <div class="proactive-hint">【小白说明】关掉游戏后，角色会按你设的间隔（如 1 小时）主动发消息到通知栏。填好间隔、打开开关、允许通知即可。安卓和 iOS 都支持，国内一般不用梯子。</div>
+                <div class="proactive-hint">
+                    【说明】这里不再用通知栏，也不依赖任何服务器。<br>
+                    你只需要：给这个角色设定「每隔多少小时来找你一次」，并打开开关。<br>
+                    之后每次你重新打开游戏时，他会根据离上次联系过去了多久，<strong>一次性补上这段时间里本该发给你的多条消息</strong>，直接出现在聊天里，就像他这段时间一直在断断续续找你一样。
+                </div>
             </div>
         </div>
     </div>
@@ -20034,24 +20026,6 @@ ${historyDesc}
         function closeProactiveReplySettingsPanel() {
             document.getElementById('proactiveReplySettingsPanel').classList.remove('show');
         }
-        /* 推送服务器 URL：游戏作者部署 Cloudflare Worker / 自托管推送服务后填入，用于 iOS 后台推送。留空则仅安卓 periodicSync 生效 */
-        var PUSH_SERVER_URL = 'https://push.xiaoyuncloud.cn';
-        /* 国内备用地址：若你为推送服务绑定了额外域名（如 Nginx 反代或其它节点），可在此填入；留空则只用上面的地址 */
-        var PUSH_SERVER_URL_CN = 'https://push.xiaoyuncloud.cn';
-        const PROACTIVE_DB = 'tabula_proactive_db';
-        const PROACTIVE_STORE = 'proactive';
-        function openProactiveDB() {
-            return new Promise((resolve, reject) => {
-                const req = indexedDB.open(PROACTIVE_DB, 1);
-                req.onerror = () => reject(req.error);
-                req.onsuccess = () => resolve(req.result);
-                req.onupgradeneeded = (e) => {
-                    if (!e.target.result.objectStoreNames.contains(PROACTIVE_STORE)) {
-                        e.target.result.createObjectStore(PROACTIVE_STORE, { keyPath: 'relationId' });
-                    }
-                };
-            });
-        }
         function buildHistoryLinesForRelation(relationId) {
             const r = gameState.relations.find(x => x.id === relationId);
             if (!r) return [];
@@ -20084,37 +20058,7 @@ ${historyDesc}
             const background = (r.background || '').toString().trim();
             return ['名字：' + name, '性别：' + genderLabel, age !== '' ? '年龄：' + age : '', affinity !== '' ? '好感度：' + affinity : '', occupation ? '职业：' + occupation : '', meetTime ? '相遇时间：' + meetTime : '', personality ? '性格标签：' + personality : '', background ? '背景·故事：' + background : ''].filter(Boolean).join('\n');
         }
-        function syncProactiveToIndexedDB() {
-            const list = (gameState.relations || []).filter(r => r.proactiveReply);
-            if (!userSettings.api || !userSettings.api.endpoint || !userSettings.api.key) return;
-            const worldPresetText = (typeof getCheckedWorldPresetContents === 'function') ? getCheckedWorldPresetContents() : '';
-            const worldPresetBlock = worldPresetText && String(worldPresetText).trim() ? '\n\n【当前勾选的预设世界观】\n' + String(worldPresetText).trim() : '';
-            const playerProfileBlock = (typeof getPlayerProfileBlock === 'function') ? getPlayerProfileBlock() : '';
-            openProactiveDB().then(db => {
-                const tx = db.transaction(PROACTIVE_STORE, 'readwrite');
-                const store = tx.objectStore(PROACTIVE_STORE);
-                (gameState.relations || []).forEach(r => {
-                    if (!r.proactiveReply) { store.delete(r.id); return; }
-                    const payload = {
-                        relationId: r.id,
-                        proactiveReply: true,
-                        proactiveReplyIntervalHours: r.proactiveReplyIntervalHours != null ? r.proactiveReplyIntervalHours : 1,
-                        lastProactiveAt: r.lastProactiveAt || (r.proactiveReply ? Date.now() : 0),
-                        gameState: JSON.parse(JSON.stringify(gameState)),
-                        userSettings: JSON.parse(JSON.stringify(userSettings)),
-                        name: (getRelationDisplayName && getRelationDisplayName(r)) || r.name || r.remarkName || 'TA',
-                        charInfo: buildCharInfoForRelation(r),
-                        historyLines: buildHistoryLinesForRelation(r.id),
-                        worldPresetBlock: worldPresetBlock,
-                        playerProfileBlock: playerProfileBlock ? '\n\n【玩家档案（对方）】\n' + playerProfileBlock : '',
-                        avatar: r.avatar || '',
-                        api: JSON.parse(JSON.stringify(userSettings.api || {}))
-                    };
-                    store.put(payload);
-                });
-                return new Promise((res, rej) => { tx.oncomplete = res; tx.onerror = () => rej(tx.error); });
-            }).catch(e => console.warn('Proactive sync failed:', e));
-        }
+        function syncProactiveToIndexedDB() {}
         function clearProactiveFromIndexedDB(relationId) {
             openProactiveDB().then(db => {
                 const tx = db.transaction(PROACTIVE_STORE, 'readwrite');
@@ -20308,7 +20252,7 @@ ${historyDesc}
                 const tz = 'UTC' + sign + tzH + ':' + tzM;
                 return '【当前现实时间】\n' +
                     (y + '-' + mo + '-' + d + ' 周' + week[now.getDay()] + ' ' + hh + ':' + mm + ':' + ss + '（' + tz + '）') +
-                    '\n（请严格根据这个现实时间判断：现在是清晨/上午/中午/下午/傍晚/晚上/深夜，并据此写台词与语气。）\n';
+                    '\n（请严格根据这个现实时间判断：现在是清晨/上午/中午/下午/傍晚/晚上/深夜，并据此写台词与语气；多描述自己正在做什么或刚刚在忙什么，而不是单纯报时。）\n';
             } catch (e) {
                 return '';
             }
@@ -20322,9 +20266,131 @@ ${historyDesc}
                 return '';
             }
         }
-        function runProactiveCatchUpOnLoad() {
-            // 补拉逻辑已关闭：不在打开游戏时根据缺失的时间批量生成消息
-            return;
+        async function callProactiveCatchupAPI(payload) {
+            const api = (payload.api && payload.api.endpoint) ? payload.api : (userSettings && userSettings.api && userSettings.api.endpoint ? userSettings.api : null);
+            if (!api || !api.endpoint || !api.key) return null;
+            const name = (payload.name || 'TA').toString().trim();
+            const charInfo = payload.charInfo || '';
+            const historyLines = Array.isArray(payload.historyLines) ? payload.historyLines : [];
+            const worldPresetBlock = payload.worldPresetBlock || '';
+            const intervalHours = payload.proactiveReplyIntervalHours || 1;
+            const missedCount = Math.max(1, payload.missedCount || 1);
+            const timeCtx = getRealTimeContextText();
+            let endpoint = (api.endpoint || '').trim();
+            if (!endpoint.endsWith('/chat/completions')) endpoint = endpoint.replace(/\/$/, '') + '/chat/completions';
+            const userContent =
+                '【重要场景设定】\n' +
+                '· 你和对方设置的是「每隔 ' + intervalHours + ' 小时来找对方一次」。\n' +
+                '· 结果对方这次离开了很久才回到游戏，中间一共错过了约 ' + missedCount + ' 个「该来找对方的时间点」。\n' +
+                '· 现在要补拉：补上这 ' + missedCount + ' 个时间点里，你按当时时间段和心情会发给对方的话。\n\n' +
+                '【你要做的事】\n' +
+                '1）每个时间点可以发多条消息（多句话），不是每个间隔只发一句。假想自己在这段时间里，在这些时间节点分别发过一批批消息：早一点的可以更日常、忙碌，越接近现在越贴近此刻状态；\n' +
+                '2）每条都可以说说「你当时在干嘛 / 在想什么 / 正要去做什么」，顺带关心对方、或问问他在干嘛；\n' +
+                '3）整体要像聊天记录里断断续续的对话，而不是一次性总结；\n' +
+                '4）不要刻意说具体几点几分、不要说「都 X 点了」这类抱怨时间的话，也不要写成旁白或作文。\n\n' +
+                timeCtx +
+                '\n【聊天记录】\n' +
+                (historyLines.length ? historyLines.join('\n') : '（暂无记录）') +
+                (worldPresetBlock || '');
+            const sysPrompt = '你是「' + name + '」。你的设定如下：\n' + charInfo + '\n\n请以该角色身份，在玩家重新打开聊天时，按多个时间点分别输出多段话（reply 数组里每条可以是一句或几句，总条数可以多于时间点个数）。';
+            const res = await fetch(endpoint, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + (api.key || '') },
+                body: JSON.stringify({
+                    model: api.model || 'gpt-3.5-turbo',
+                    messages: [
+                        { role: 'system', content: sysPrompt },
+                        { role: 'user', content: userContent }
+                    ],
+                    temperature: (typeof api.temperature === 'number' && !isNaN(api.temperature)) ? api.temperature : 0.85
+                })
+            });
+            if (!res.ok) throw new Error('API ' + res.status);
+            const json = await res.json();
+            let content = (json.choices && json.choices[0] && json.choices[0].message && json.choices[0].message.content)
+                ? json.choices[0].message.content.trim()
+                : '';
+            if (!content) throw new Error('未返回内容');
+            content = content.replace(/^```(?:json)?\s*/i, '').replace(/\s*```$/i, '').trim();
+            let replies = [];
+            try {
+                const parsed = JSON.parse(content);
+                if (Array.isArray(parsed.reply)) {
+                    replies = parsed.reply.map(x => (x || '').toString().trim()).filter(Boolean);
+                } else if (typeof parsed.reply === 'string') {
+                    const t = parsed.reply.toString().trim();
+                    if (t) replies = [t];
+                }
+            } catch (e) {
+                const t = content.toString().trim();
+                if (t) replies = [t];
+            }
+            if (!replies.length) return [];
+            return replies;
+        }
+        async function runProactiveCatchUpOnLoad() {
+            try {
+                if (!userSettings || !userSettings.api || !userSettings.api.endpoint || !userSettings.api.key) return;
+                const relations = (gameState.relations || []).filter(r => r.proactiveReply);
+                if (!relations.length) return;
+                const now = Date.now();
+                const worldPresetText = (typeof getCheckedWorldPresetContents === 'function') ? getCheckedWorldPresetContents() : '';
+                const worldPresetBlock = worldPresetText && String(worldPresetText).trim()
+                    ? '\n\n【当前勾选的预设世界观】\n' + String(worldPresetText).trim()
+                    : '';
+                const playerProfileBlock = (typeof getPlayerProfileBlock === 'function') ? getPlayerProfileBlock() : '';
+                for (const r of relations) {
+                    const intervalHours = (r.proactiveReplyIntervalHours != null ? r.proactiveReplyIntervalHours : 1);
+                    const safeIntervalHours = Math.min(Math.max(intervalHours, 0.1), 168);
+                    const intervalMs = safeIntervalHours * 60 * 60 * 1000;
+                    const lastAt = r.lastProactiveAt || 0;
+                    if (lastAt && (now - lastAt) < intervalMs) continue;
+                    if (!lastAt) {
+                        r.lastProactiveAt = now;
+                        continue;
+                    }
+                    const gapMs = now - lastAt;
+                    let missedCount = Math.floor(gapMs / intervalMs);
+                    if (missedCount <= 0) continue;
+                    const MAX_MISSED = 24;
+                    if (missedCount > MAX_MISSED) missedCount = MAX_MISSED;
+                    const payload = {
+                        relationId: r.id,
+                        proactiveReplyIntervalHours: safeIntervalHours,
+                        missedCount: missedCount,
+                        name: (getRelationDisplayName && getRelationDisplayName(r)) || r.name || r.remarkName || 'TA',
+                        charInfo: buildCharInfoForRelation(r),
+                        historyLines: buildHistoryLinesForRelation(r.id),
+                        worldPresetBlock: worldPresetBlock,
+                        playerProfileBlock: playerProfileBlock ? '\n\n【玩家档案（对方）】\n' + playerProfileBlock : '',
+                        avatar: r.avatar || '',
+                        api: JSON.parse(JSON.stringify(userSettings.api || {})),
+                        userSettings: JSON.parse(JSON.stringify(userSettings || {}))
+                    };
+                    let replies = [];
+                    try {
+                        replies = await callProactiveCatchupAPI(payload);
+                    } catch (e) {
+                        continue;
+                    }
+                    if (!Array.isArray(replies) || !replies.length) continue;
+                    if (!gameState.chatLogs) gameState.chatLogs = {};
+                    if (!Array.isArray(gameState.chatLogs[r.id])) gameState.chatLogs[r.id] = [];
+                    const baseStart = lastAt || (now - intervalMs * replies.length);
+                    replies.forEach((text, idx) => {
+                        if (!text) return;
+                        const sentAt = baseStart + intervalMs * (idx + 1);
+                        gameState.chatLogs[r.id].push({ from: 'other', text: text, proactive: true, sentAt: sentAt });
+                    });
+                    r.lastProactiveAt = baseStart + intervalMs * replies.length;
+                }
+                saveGame();
+                if (currentChatRelationId && typeof renderChatMessages === 'function') {
+                    renderChatMessages();
+                }
+            } catch (e) {
+                console.warn('Proactive catch-up failed:', e);
+            }
         }
 
         var chatSearchActiveTab = 'text';
@@ -22742,7 +22808,6 @@ ${historyDesc}
             r.proactiveReplyIntervalHours = h;
             e.target.value = h;
             saveGame();
-            if (r.proactiveReply) { syncProactiveToIndexedDB(); registerWithPushServer(); }
         });
         document.getElementById('proactiveEnableToggle').addEventListener('change', (e) => {
             if (!currentChatRelationId) return;
@@ -22758,15 +22823,6 @@ ${historyDesc}
                 thumb.style.transform = en ? 'translateX(18px)' : 'translateX(0)';
                 sw.classList.toggle('on', en);
                 saveGame();
-                if (en) {
-                    requestNotificationPermission().then(() => {
-                        syncProactiveToIndexedDB();
-                        registerProactiveServiceWorker();
-                        registerWithPushServer();
-                    });
-                } else {
-                    clearProactiveFromIndexedDB(currentChatRelationId);
-                }
             }
             function revertToggleUI() {
                 e.target.checked = false;
@@ -22776,7 +22832,7 @@ ${historyDesc}
                 sw.classList.remove('on');
             }
             if (enabling) {
-                showConfirmModal('确认开启', '开启后会发生什么：\n- 这个角色会按你设置的「间隔（小时）」主动发一条消息。\n- 如果系统允许通知，会在手机/电脑的通知栏显示。\n\n你需要做的 2 件事：\n1) 设置 → API 配置：填好 API Key（没填就无法生成消息）\n2) 允许本网站的通知权限（弹窗出现时点“允许”）\n\n关于后台与清后台（很重要）：\n- 只要浏览器/网页应用还活着（没被系统杀死），通知更容易按间隔出现。\n- 如果你手动“清理后台/划掉/强制停止”，很多机型会直接停止后台任务，期间可能不会再有通知。\n- 本版本已关闭“补拉”：清后台期间漏掉的消息不会在下次打开游戏时补出来。\n\n建议（更稳定）：\n- 安卓尽量用 Chrome，并把游戏添加到主屏幕；必要时把浏览器加入电池白名单。\n- iPhone/iPad 也建议用 Safari 添加到主屏幕，并确保系统通知没关。\n\n确定开启吗？', function() {
+                showConfirmModal('确认开启', '开启后会发生什么：\n- 你设定「每隔多少小时来找你一次」后，每次重新打开游戏时，角色会按离线时长补出一批消息，直接出现在聊天里。\n- 每个间隔可以有多条消息（多句话），不是每隔几小时只发一句。\n- 需要先在「设置 → API 配置」里填好接口地址和 Key，否则无法生成。\n\n确定开启吗？', function() {
                     applyToggle(true);
                 }, function() {
                     revertToggleUI();
