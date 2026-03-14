@@ -23192,6 +23192,14 @@ ${historyDesc}
         };
         // 给一个最小展示时长，避免本地瞬间白屏看不到文案
         setTimeout(finishInitialLoader, 600);
+        // 从通知栏点进时带上 #chat-relationId，打开对应聊天
+        setTimeout(function() {
+            var hash = (typeof location !== 'undefined' && location.hash) ? location.hash : '';
+            var m = hash && hash.indexOf('#chat-') === 0 ? hash.slice(6).trim() : '';
+            if (m && gameState.relations.some(function(r) { return r.id === m; })) {
+                if (typeof openChat === 'function') openChat(m);
+            }
+        }, 800);
     </script>
 </body>
 </html>

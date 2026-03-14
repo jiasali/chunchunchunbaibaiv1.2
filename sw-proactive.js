@@ -162,29 +162,32 @@ async function handleProactiveWakeup(relationId, url) {
 self.addEventListener('push', (e) => {
   if (!e.data) return;
   try {
-    const payload = e.data.json();
-    const d = (payload && payload.data) || payload || {};
-    const type = d.type || payload.type;
+    const payload = e.data.json() || {};
+    const type = payload.type || (payload.data && payload.data.type);
     // 服务器仅唤醒模式：收到唤醒信号后在本机生成消息并通知
     if (type === 'proactive-wakeup') {
-      const relationId = d.relationId || payload.relationId;
-      const url = d.url || payload.url || (self.location.origin + self.location.pathname);
+      const relationId = (payload.data && payload.data.relationId) || payload.relationId;
+      const url = (payload.data && payload.data.url) || payload.url || (self.location.origin + self.location.pathname);
       e.waitUntil(handleProactiveWakeup(relationId, url));
       return;
     }
-    const inner = (d.data && typeof d.data === 'object') ? d.data : {};
-    const title = (d.title || payload.title) || '纯白人生';
-    const body = (d.body || payload.body) || '';
-    const icon = (d.icon || payload.icon) || undefined;
-    const tag = (d.tag || payload.tag) || 'proactive-default';
-    const url = (inner.url || d.url) || self.location.origin + self.location.pathname;
-    const data = { relationId: inner.relationId, url };
+    /* 服务端加密的是 { title, body, icon, tag, data: { relationId, url } }，解密后 payload 即该对象 */
+    const inner = (payload.data && typeof payload.data === 'object') ? payload.data : {};
+    const title = (payload.title != null ? payload.title : inner.title) || '纯白人生';
+    const body = (payload.body != null ? payload.body : inner.body) || '';
+    const icon = payload.icon != null ? payload.icon : inner.icon;
+    const tag = (payload.tag != null ? payload.tag : inner.tag) || 'proactive-default';
+    let openUrl = (inner.url && String(inner.url).startsWith('http')) ? inner.url : (payload.url && String(payload.url).startsWith('http') ? payload.url : null);
+    if (!openUrl) openUrl = self.location.origin + self.location.pathname;
+    const relationId = inner.relationId || payload.relationId;
+    if (relationId && !openUrl.includes('#')) openUrl = openUrl.replace(/#.*$/, '') + '#chat-' + relationId;
+    const data = { relationId: relationId, url: openUrl };
     e.waitUntil(
       self.registration.showNotification(title, {
         body: body,
-        icon: icon,
+        icon: icon || undefined,
         tag: tag,
-        data: { ...data, url: url }
+        data: data
       })
     );
   } catch (err) {
@@ -235,6 +238,10 @@ self.addEventListener('periodicsync', async (e) => {
 
 self.addEventListener('notificationclick', (e) => {
   e.notification.close();
-  const url = e.notification.data && e.notification.data.url;
-  if (url && url.startsWith('http')) e.waitUntil(clients.openWindow(url));
+  const data = e.notification.data || {};
+  let url = data.url;
+  if (!url || typeof url !== 'string' || !url.startsWith('http')) url = self.location.origin + self.location.pathname;
+  const relationId = data.relationId;
+  if (relationId && !url.includes('#chat-')) url = url.replace(/#.*$/, '') + '#chat-' + relationId;
+  e.waitUntil(clients.openWindow(url));
 });
