@@ -20328,8 +20328,11 @@ ${historyDesc}
             if (!replies.length) return [];
             return replies;
         }
+        let proactiveCatchUpHasRun = false;
         async function runProactiveCatchUpOnLoad() {
             try {
+                if (proactiveCatchUpHasRun) return;
+                proactiveCatchUpHasRun = true;
                 if (!userSettings || !userSettings.api || !userSettings.api.endpoint || !userSettings.api.key) return;
                 const relations = (gameState.relations || []).filter(r => r.proactiveReply);
                 if (!relations.length) return;
